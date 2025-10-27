@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # Application service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devops-app-dev
+    ports:
+      # using env variables
+      - '${PORT}:${PORT}'
+    env_file:
+      - .env.development
+    # environment:
+    #   - NODE_ENV=development
+    #   - DATABASE_URL=postgres://user:password@neon-local:5432/main
+    volumes:
+      # Mount source code for hot reloading in development
+      - .:/app
+      - /app/node_modules
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
