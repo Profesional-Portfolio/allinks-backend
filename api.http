@@ -15,9 +15,9 @@ Content-Type: application/json
 {
   "username": "Dave",
   "email": "davejs@davejs.com",
+  "password": "Test123@",
   "first_name": "Doe",
-  "last_name": "Doe",
-  "password": "Test123@"
+  "last_name": "Doe"
 }
 
 ###
@@ -28,7 +28,7 @@ POST {{local_base_url}}/{{auth_resource}}/login
 Content-Type: application/json
 
 {
-  "email": "dave@davecoder.com",
+  "email": "davejs@davejs.com",
   "password": "Test123@"
 }
 
@@ -39,6 +39,11 @@ Content-Type: application/json
 POST {{local_base_url}}/{{auth_resource}}/logout
 Content-Type: application/json
 
+###
+
+# @name profile
+GET {{local_base_url}}/{{auth_resource}}/profile
+Content-Type: application/json
 
 ###
 

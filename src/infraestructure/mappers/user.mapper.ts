@@ -2,8 +2,6 @@ import { UserEntity } from '@/domain/entities';
 
 export class UserMapper {
   static userEntityFromObject(object: UserEntity): UserEntity {
-    // validate object
-
     return new UserEntity(
       object.id,
       object.email,

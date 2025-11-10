@@ -1,21 +1,20 @@
 import {
   AuthDatasource,
+  LoginUserDto,
   RegisterUserDto,
+  UserEntity,
   UserWithoutPassword,
 } from '@/domain/index';
+import { PasswordHasher } from '@/domain/interfaces';
 import { prismadb } from '@/infraestructure/prismadb';
-import { BadRequestException } from '@/infraestructure/http';
-import { BcryptAdapter } from '../utils';
+import {
+  BadRequestException,
+  UnauthorizedException,
+} from '@/infraestructure/http';
 import { UserMapper } from '../mappers';
 
-type HashFunction = (password: string) => Promise<string>;
-type CompareFunction = (password: string, hashed: string) => Promise<boolean>;
-
 export class AuthDatasourceImpl implements AuthDatasource {
-  constructor(
-    private readonly hashPassword: HashFunction = BcryptAdapter.hash,
-    private readonly comparePassword: CompareFunction = BcryptAdapter.compare
-  ) {}
+  constructor(private readonly passwordHasher: PasswordHasher) {}
 
   async register(payload: RegisterUserDto): Promise<UserWithoutPassword> {
     try {
@@ -34,7 +33,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
       const user = await prismadb.user.create({
         data: {
           ...payloadWithoutPassword,
-          password_hash: await this.hashPassword(password),
+          password_hash: await this.passwordHasher.hash(password),
         },
       });
 
@@ -42,6 +41,43 @@ export class AuthDatasourceImpl implements AuthDatasource {
       const { password_hash, ...userWithoutPassword } = mappedUser;
 
       return userWithoutPassword;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async login(payload: LoginUserDto): Promise<UserEntity> {
+    try {
+      const user = await prismadb.user.findUnique({
+        where: {
+          email: payload.email,
+        },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const isPasswordValid = await this.passwordHasher.compare(
+        payload.password,
+        user.password_hash
+      );
+
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      if (!user.is_active) {
+        throw new UnauthorizedException('Account is inactive');
+      }
+
+      // Actualizar last_login_at
+      await prismadb.user.update({
+        where: { id: user.id },
+        data: { last_login_at: new Date() },
+      });
+
+      return UserMapper.userEntityFromObject(user);
     } catch (error) {
       throw error;
     }

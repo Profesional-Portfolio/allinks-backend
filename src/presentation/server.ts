@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction, Router } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
+import cookies from 'cookie-parser';
 import { HttpStatus } from '@/infraestructure/http/http-status';
 
 interface ServerOptions {
@@ -26,14 +27,16 @@ export default class Server {
     this.app.use(helmet());
     this.app.use(morgan('combined'));
     this.app.use(cors());
+    this.app.use(cookies());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
     this.app.use(
       (err: Error, _: Request, res: Response, next: NextFunction) => {
+        console.error('Fatal error:', err);
         return res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Internal server error 1' });
+          .json({ message: 'Internal server error' });
       }
     );
 
