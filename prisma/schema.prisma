@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+id String @id @default(uuid())
+email String @unique @db.VarChar(255)
+username String @unique @db.VarChar(50)
+password_hash String
+first_name String
+last_name String
+avatar_url String?
+bio String?
+email_verified Boolean @default(false)
+is_active Boolean @default(true)
+created_at DateTime @default(now())
+updated_at DateTime @updatedAt
+last_login_at DateTime
+links Link[]
+refreshTokens RefreshToken[]
+passwordResetTokens PasswordResetToken[]
+emailVerificationToken EmailVerificationToken[]
+@@index([email])
+@@index([username])
+@@index([created_at])
+}
+
+model Link {
+id String @id @default(uuid())
+user_id String
+user User @relation(fields: [user_id], references: [id])
+url String
+platform String
+title String
+display_order Int @default(0)
+is_active Boolean @default(true)
+created_at DateTime @default(now())
+updated_at DateTime @updatedAt
+@@index([user_id])
+@@index([platform])
+@@index([user_id, display_order])
+}
+
+model Platform {
+id String @id @default(uuid())
+name String
+display_name String
+url_pattern String
+icon_url String
+base_url String
+is_active String
+created_at DateTime @default(now())
+}
+
+model RefreshToken {
+id String @id @default(uuid())
+user_id String
+user User @relation(fields: [user_id], references: [id])
+token String
+expires_at DateTime
+created_at DateTime
+revoked_at DateTime
+@@index([user_id])
+@@index([token])
+@@index([expires_at])
+}
+
+model PasswordResetToken {
+id String @id @default(uuid())
+user_id String
+user User @relation(fields: [user_id], references: [id])
+token String
+expires_at DateTime
+used_at DateTime
+created_at DateTime @default(now())
+@@index([user_id])
+@@index([token])
+}
+
+model EmailVerificationToken {
+id String @id @default(uuid())
+user_id String
+user User @relation(fields: [user_id], references: [id])
+token String
+expires_at DateTime
+verified_at DateTime
+created_at DateTime
+@@index([user_id])
+@@index([token])
+}

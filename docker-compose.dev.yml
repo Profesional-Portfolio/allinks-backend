@@ -1,28 +1,54 @@
-version: '3.8'
-
+version: '3'
 services:
-  # Application service
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: devops-app-dev
+  # Database with postgresql
+  postgres_db:
+    image: postgres:15
+    restart: unless-stopped
+    hostname: postgres_db
+    container_name: postgres_db
     ports:
-      # using env variables
-      - '${PORT}:${PORT}'
-    env_file:
-      - .env.development
-    # environment:
-    #   - NODE_ENV=development
-    #   - DATABASE_URL=postgres://user:password@neon-local:5432/main
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=prisma
     volumes:
-      # Mount source code for hot reloading in development
-      - .:/app
-      - /app/node_modules
+      - ./postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d postgres']
+      interval: 5s
+      timeout: 2s
+      retries: 20
+    command: postgres -c listen_addresses='*'
+    logging:
+      options:
+        max-size: '10m'
+        max-file: '3'
     networks:
       - app-network
-    restart: unless-stopped
+
+  # Backend
+  server:
+    build:
+      context: .
+      dockerfile: dockerfile.dev
+    container_name: allinks-server
+    ports:
+      - '3000:3000'
+    volumes:
+      # Mount source code for hot reloading in development
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    stdin_open: true
+    tty: true
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    env_file:
+      - .env.development
+    networks:
+      - app-network
 
 networks:
   app-network:
-    driver: bridge
+    name: app-network

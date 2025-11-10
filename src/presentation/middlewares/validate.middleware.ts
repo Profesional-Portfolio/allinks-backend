@@ -1,0 +1,16 @@
+import { ZodObject } from 'zod';
+import { BadRequestException } from '@/infraestructure/http';
+import { formatValidationError } from '@/infraestructure/utils';
+
+export const validate = <T extends ZodObject<any>>(
+  schema: T,
+  data: Record<string, any>
+): T['_output'] => {
+  const result = schema.safeParse(data);
+
+  if (!result.success) {
+    throw new BadRequestException(formatValidationError(result.error));
+  }
+
+  return result.data;
+};

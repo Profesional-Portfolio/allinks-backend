@@ -3,3 +3,12 @@ node_modules/
 .env.*
 coverage/
 .neon_local/
+/generated/prisma
+
+/generated/prisma
+
+/generated/prisma
+
+/generated/prisma
+
+/postgres_data/
