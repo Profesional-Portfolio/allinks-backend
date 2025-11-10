@@ -1,14 +1,19 @@
 import {
   AuthRepository,
   AuthDatasource,
+  LoginUserDto,
   RegisterUserDto,
+  UserWithoutPassword,
 } from '@/domain/index';
-import { User } from '@/generated/prisma';
 
 export class AuthRepositoryImpl implements AuthRepository {
   constructor(private readonly authDatasource: AuthDatasource) {}
 
-  register(registerUserDto: RegisterUserDto): Promise<User> {
+  register(registerUserDto: RegisterUserDto): Promise<UserWithoutPassword> {
     return this.authDatasource.register(registerUserDto);
+  }
+
+  login(loginUserDto: LoginUserDto): Promise<UserWithoutPassword> {
+    return this.authDatasource.login(loginUserDto);
   }
 }

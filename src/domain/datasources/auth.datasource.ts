@@ -1,6 +1,7 @@
-import { RegisterUserDto } from '../dtos/auth';
-import { User } from '@/generated/prisma';
+import { LoginUserDto, RegisterUserDto } from '../dtos/auth';
+import { UserWithoutPassword } from '../entities';
 
 export interface AuthDatasource {
-  register(payload: RegisterUserDto): Promise<User>;
+  register(payload: RegisterUserDto): Promise<UserWithoutPassword>;
+  login(payload: LoginUserDto): Promise<UserWithoutPassword>;
 }
