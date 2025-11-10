@@ -33,7 +33,7 @@ export default class Server {
       (err: Error, _: Request, res: Response, next: NextFunction) => {
         return res
           .status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Internal server error' });
+          .json({ message: 'Internal server error 1' });
       }
     );
 

@@ -27,7 +27,7 @@ email_verified Boolean @default(false)
 is_active Boolean @default(true)
 created_at DateTime @default(now())
 updated_at DateTime @updatedAt
-last_login_at DateTime
+last_login_at DateTime?
 links Link[]
 refreshTokens RefreshToken[]
 passwordResetTokens PasswordResetToken[]

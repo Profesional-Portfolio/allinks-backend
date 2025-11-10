@@ -1,12 +1,23 @@
-import { AuthDatasource, RegisterUserDto } from '@/domain/index';
+import {
+  AuthDatasource,
+  RegisterUserDto,
+  UserWithoutPassword,
+} from '@/domain/index';
 import { prismadb } from '@/infraestructure/prismadb';
-import { User } from '@/generated/prisma';
 import { BadRequestException } from '@/infraestructure/http';
+import { BcryptAdapter } from '../utils';
+import { UserMapper } from '../mappers';
+
+type HashFunction = (password: string) => Promise<string>;
+type CompareFunction = (password: string, hashed: string) => Promise<boolean>;
 
 export class AuthDatasourceImpl implements AuthDatasource {
-  constructor() {}
+  constructor(
+    private readonly hashPassword: HashFunction = BcryptAdapter.hash,
+    private readonly comparePassword: CompareFunction = BcryptAdapter.compare
+  ) {}
 
-  async register(payload: RegisterUserDto): Promise<User> {
+  async register(payload: RegisterUserDto): Promise<UserWithoutPassword> {
     try {
       const userExists = await prismadb.user.findUnique({
         where: {
@@ -18,12 +29,21 @@ export class AuthDatasourceImpl implements AuthDatasource {
         throw new BadRequestException('User already exists');
       }
 
+      const { password, ...payloadWithoutPassword } = payload;
+
       const user = await prismadb.user.create({
         data: {
-          ...payload,
-          password_hash: '',
+          ...payloadWithoutPassword,
+          password_hash: await this.hashPassword(password),
         },
       });
-    } catch (error) {}
+
+      const mappedUser = UserMapper.userEntityFromObject(user);
+      const { password_hash, ...userWithoutPassword } = mappedUser;
+
+      return userWithoutPassword;
+    } catch (error) {
+      throw error;
+    }
   }
 }

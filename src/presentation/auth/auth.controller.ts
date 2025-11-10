@@ -9,12 +9,8 @@ export class AuthController {
   registerUser = async (req: Request, res: Response) => {
     const data = validate(registerUserDto, req.body);
 
-    try {
-      const user = await this.authRepository.register(data);
-      return res.status(HttpStatus.CREATED).json({ data: user });
-    } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ error });
-    }
+    const user = await this.authRepository.register(data);
+    return res.status(HttpStatus.CREATED).json({ data: user });
   };
 
   loginUser = (req: Request, res: Response) => {
