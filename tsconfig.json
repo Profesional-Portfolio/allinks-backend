@@ -13,7 +13,9 @@
       "@/domain/*": ["./src/domain/*"],
       "@/infraestructure/*": ["./src/infraestructure/*"],
       "@/data/*": ["./src/data/*"]
-    }
+    },
+    "types": ["jest"]
   },
+  "include": ["src/**/*.ts", "tests/**/*.test.ts"],
   "exclude": ["node_modules", "dist", "generated"]
 }

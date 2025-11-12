@@ -27,6 +27,24 @@ services:
     networks:
       - app-network
 
+  prisma-studio:
+    image: node:lts-alpine3.17
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    command: npx prisma studio --port 5555 --browser none
+    ports:
+      - '5555:5555'
+    env_file:
+      - .env.development
+    networks:
+      - app-network
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+      server:
+        condition: service_started
+
   # Backend
   server:
     build:

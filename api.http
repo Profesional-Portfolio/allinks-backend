@@ -41,9 +41,15 @@ Content-Type: application/json
 
 ###
 
-# @name profile
-GET {{local_base_url}}/{{auth_resource}}/profile
+# @name refreshToken
+
+POST {{local_base_url}}/{{auth_resource}}/refresh
 Content-Type: application/json
+
+###
+
+# @name profile
+POST {{local_base_url}}/{{auth_resource}}/profile
 
 ###
 
