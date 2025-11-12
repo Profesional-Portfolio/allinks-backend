@@ -35,16 +35,33 @@ export class JwtTokenProviderAdapter implements TokenProvider {
       const decoded = jwt.verify(token, this.accessSecret) as TokenPayload;
       return decoded;
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired access token');
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid token');
+      } else if (error instanceof jwt.TokenExpiredError) {
+        throw new UnauthorizedException('Token expired');
+      } else {
+        console.error('Error verifying access token:', error);
+        throw new UnauthorizedException('Error verifying access token');
+      }
     }
   }
 
   verifyRefreshToken(token: string): TokenPayload {
     try {
       const decoded = jwt.verify(token, this.refreshSecret) as TokenPayload;
+      if (decoded === null) {
+        throw new UnauthorizedException('Invalid token');
+      }
       return decoded;
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new UnauthorizedException('Invalid token');
+      } else if (error instanceof jwt.TokenExpiredError) {
+        throw new UnauthorizedException('Token expired');
+      } else {
+        console.error('Error verifying refresh token:', error);
+        throw new UnauthorizedException('Error verifying refresh token');
+      }
     }
   }
 }

@@ -14,8 +14,8 @@
       "@/infraestructure/*": ["./src/infraestructure/*"],
       "@/data/*": ["./src/data/*"]
     },
-    "types": ["jest"]
+    "types": ["jest", "node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.test.ts"],
-  "exclude": ["node_modules", "dist", "generated"]
+  "include": ["src/**/*.ts", "tests/**/*", "tests/**/*.test.ts"],
+  "exclude": ["dist", "generated"]
 }
