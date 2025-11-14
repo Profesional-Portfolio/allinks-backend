@@ -16,6 +16,62 @@ import { UserMapper } from '../mappers';
 export class AuthDatasourceImpl implements AuthDatasource {
   constructor(private readonly passwordHasher: PasswordHasher) {}
 
+  async findUserByEmail(email: string): Promise<UserWithoutPassword> {
+    try {
+      const user = await prismadb.user.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const mappedUser = UserMapper.userEntityFromObject(user);
+      const { password_hash, ...userWithoutPassword } = mappedUser;
+
+      return userWithoutPassword;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findUserById(id: string): Promise<UserWithoutPassword> {
+    try {
+      const user = await prismadb.user.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const mappedUser = UserMapper.userEntityFromObject(user, true);
+
+      return mappedUser;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateLastLogin(id: string): Promise<void> {
+    try {
+      await prismadb.user.update({
+        where: {
+          id,
+        },
+        data: {
+          last_login_at: new Date(),
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async register(payload: RegisterUserDto): Promise<UserWithoutPassword> {
     try {
       const userExists = await prismadb.user.findUnique({
