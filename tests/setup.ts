@@ -1,6 +1,3 @@
-import { PrismaClient } from '../generated/prisma';
-import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
-
 // Mock Prisma Client
 // jest.mock('../src/infraestructure/prismadb', () => ({
 //   __esModule: true,
@@ -8,10 +5,6 @@ import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
 // }));
 
 // Mock Prisma Client
-jest.mock('../src/infraestructure/prismadb', () => ({
-  __esModule: true,
-  default: mockDeep<PrismaClient>(),
-}));
 
 // Global test utilities
 // beforeAll(() => {
@@ -22,6 +15,10 @@ jest.mock('../src/infraestructure/prismadb', () => ({
 
 // beforeEach(() => {
 // });
+beforeEach(() => {
+  // Reset de mocks antes de cada test
+  jest.clearAllMocks();
+});
 
 afterEach(() => {
   jest.clearAllMocks();
