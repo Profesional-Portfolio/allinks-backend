@@ -3,6 +3,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import cookies from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from '../config';
 import { HttpStatus } from '@/infraestructure/http/http-status';
 
 interface ServerOptions {
@@ -57,6 +59,7 @@ export default class Server {
     });
 
     this.app.use(this.routes);
+    this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     this.app.use((_, res) => {
       res.status(HttpStatus.NOT_FOUND).json({ message: 'Not found' });

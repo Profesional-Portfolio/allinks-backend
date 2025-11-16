@@ -1,10 +1,25 @@
-import { UserEntity } from '@/domain/entities';
+import { UserEntity, UserWithoutPassword } from '@/domain/entities';
 
 export const mockUser: UserEntity = {
   id: '123',
   email: 'test@test.com',
   first_name: 'Test',
   password_hash: 'hashed-password',
+  created_at: new Date(),
+  updated_at: new Date(),
+  last_login_at: null,
+  last_name: 'User',
+  username: 'testuser',
+  bio: '',
+  avatar_url: '',
+  is_active: true,
+  email_verified: false,
+};
+
+export const mockUserWithoutPassword: UserWithoutPassword = {
+  id: '123',
+  email: 'test@test.com',
+  first_name: 'Test',
   created_at: new Date(),
   updated_at: new Date(),
   last_login_at: null,

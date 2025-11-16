@@ -35,7 +35,13 @@ export class AuthMiddleware {
         throw new UnauthorizedException('No token provided');
       }
 
-      const payload = await this.tokenProvider.verifyAccessToken(token);
+      const [error, payload] =
+        await this.tokenProvider.verifyAccessToken(token);
+
+      if (error) {
+        throw error;
+      }
+
       req.user = payload;
       next();
     } catch (error) {
@@ -61,7 +67,12 @@ export class AuthMiddleware {
       }
 
       if (token) {
-        const payload = await this.tokenProvider.verifyAccessToken(token);
+        const [error, payload] =
+          await this.tokenProvider.verifyAccessToken(token);
+
+        if (error) {
+          next();
+        }
         req.user = payload;
       }
 

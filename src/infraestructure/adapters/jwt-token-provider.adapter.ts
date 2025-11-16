@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { TokenProvider, TokenPayload, TokenPair } from '@/domain/interfaces';
 import { ENV } from '@/config/index';
-import { UnauthorizedException } from '../http';
+import { Exception } from '@/domain/exceptions';
 
 export class JwtTokenProviderAdapter implements TokenProvider {
   constructor(
@@ -11,57 +11,73 @@ export class JwtTokenProviderAdapter implements TokenProvider {
     private readonly refreshExpiresIn: string = ENV.JWT_REFRESH_EXPIRES_IN
   ) {}
 
-  generateAccessToken(payload: TokenPayload): string {
-    return jwt.sign(payload, this.accessSecret, {
-      expiresIn: this.accessExpiresIn as any,
-    });
-  }
-
-  generateRefreshToken(payload: TokenPayload): string {
-    return jwt.sign(payload, this.refreshSecret, {
-      expiresIn: this.refreshExpiresIn as any,
-    });
-  }
-
-  generateTokenPair(payload: TokenPayload): TokenPair {
-    return {
-      accessToken: this.generateAccessToken(payload),
-      refreshToken: this.generateRefreshToken(payload),
-    };
-  }
-
-  verifyAccessToken(token: string): TokenPayload {
+  generateAccessToken(
+    payload: TokenPayload
+  ): Promise<[Exception | undefined, string]> {
     try {
-      const decoded = jwt.verify(token, this.accessSecret) as TokenPayload;
-      return decoded;
+      return Promise.resolve([
+        undefined,
+        jwt.sign(payload, this.accessSecret, {
+          expiresIn: this.accessExpiresIn as any,
+        }),
+      ]);
     } catch (error) {
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw new UnauthorizedException('Invalid token');
-      } else if (error instanceof jwt.TokenExpiredError) {
-        throw new UnauthorizedException('Token expired');
-      } else {
-        console.error('Error verifying access token:', error);
-        throw new UnauthorizedException('Error verifying access token');
-      }
+      const err = new Exception('Error generating access token', 500);
+      return Promise.resolve([err, '']);
     }
   }
 
-  verifyRefreshToken(token: string): TokenPayload {
+  generateRefreshToken(
+    payload: TokenPayload
+  ): Promise<[Exception | undefined, string]> {
+    try {
+      return Promise.resolve([
+        undefined,
+        jwt.sign(payload, this.refreshSecret, {
+          expiresIn: this.refreshExpiresIn as any,
+        }),
+      ]);
+    } catch (error) {
+      const err = new Exception('Error generating refresh token', 500);
+      return Promise.resolve([err, '']);
+    }
+  }
+
+  async generateTokenPair(
+    payload: TokenPayload
+  ): Promise<[Exception | undefined, TokenPair]> {
+    const [errorAccessToken, accessToken] =
+      await this.generateAccessToken(payload);
+    const [errorRefreshToken, refreshToken] =
+      await this.generateRefreshToken(payload);
+    if (errorAccessToken || errorRefreshToken) {
+      return [errorAccessToken || errorRefreshToken, {} as TokenPair];
+    }
+
+    return [undefined, { accessToken, refreshToken }];
+  }
+
+  async verifyAccessToken(
+    token: string
+  ): Promise<[Exception | undefined, TokenPayload]> {
+    try {
+      const decoded = jwt.verify(token, this.accessSecret) as TokenPayload;
+      return Promise.resolve([undefined, decoded]);
+    } catch (error) {
+      const err = new Exception('Invalid token', 500);
+      return Promise.resolve([err, {} as TokenPayload]);
+    }
+  }
+
+  async verifyRefreshToken(
+    token: string
+  ): Promise<[Exception | undefined, TokenPayload]> {
     try {
       const decoded = jwt.verify(token, this.refreshSecret) as TokenPayload;
-      if (decoded === null) {
-        throw new UnauthorizedException('Invalid token');
-      }
-      return decoded;
+      return Promise.resolve([undefined, decoded]);
     } catch (error) {
-      if (error instanceof jwt.JsonWebTokenError) {
-        throw new UnauthorizedException('Invalid token');
-      } else if (error instanceof jwt.TokenExpiredError) {
-        throw new UnauthorizedException('Token expired');
-      } else {
-        console.error('Error verifying refresh token:', error);
-        throw new UnauthorizedException('Error verifying refresh token');
-      }
+      const err = new Exception('Invalid token', 500);
+      return Promise.resolve([err, {} as TokenPayload]);
     }
   }
 }

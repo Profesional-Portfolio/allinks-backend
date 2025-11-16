@@ -49,7 +49,7 @@ Content-Type: application/json
 ###
 
 # @name profile
-POST {{local_base_url}}/{{auth_resource}}/profile
+GET {{local_base_url}}/{{auth_resource}}/profile
 
 ###
 

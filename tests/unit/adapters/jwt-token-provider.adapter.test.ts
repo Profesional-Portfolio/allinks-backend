@@ -1,6 +1,7 @@
 import { UnauthorizedException } from '@/infraestructure/http';
 import { JwtTokenProviderAdapter } from '../../../src/infraestructure/adapters/jwt-token-provider.adapter';
 import * as jwt from 'jsonwebtoken';
+import { Exception } from '@/domain/exceptions';
 
 jest.mock('jsonwebtoken');
 
@@ -24,7 +25,7 @@ describe('JwtTokenProviderAdapter', () => {
 
       mockJwt.sign.mockReturnValue(token as any);
 
-      const result = await tokenProvider.generateAccessToken(payload);
+      const [error, result] = await tokenProvider.generateAccessToken(payload);
 
       expect(mockJwt.sign).toHaveBeenCalledWith(payload, secretKey, {
         expiresIn: '15m',
@@ -40,7 +41,7 @@ describe('JwtTokenProviderAdapter', () => {
 
       mockJwt.sign.mockReturnValue(token as any);
 
-      const result = await tokenProvider.generateRefreshToken(payload);
+      const [error, result] = await tokenProvider.generateRefreshToken(payload);
 
       expect(mockJwt.sign).toHaveBeenCalledWith(payload, refreshSecretKey, {
         expiresIn: '7d',
@@ -56,37 +57,37 @@ describe('JwtTokenProviderAdapter', () => {
 
       mockJwt.verify.mockReturnValue(payload as any);
 
-      const result = await tokenProvider.verifyAccessToken(token);
+      const [error, result] = await tokenProvider.verifyAccessToken(token);
 
       expect(mockJwt.verify).toHaveBeenCalledWith(token, secretKey);
       expect(result).toEqual(payload);
     });
 
-    it('should throw UnauthorizedException if token is invalid', async () => {
+    it('should handle invalid token', async () => {
       const token = 'invalid-token';
 
       mockJwt.verify.mockImplementation(() => {
-        throw new jwt.JsonWebTokenError('Invalid token');
+        throw new Error('Invalid token');
       });
 
-      // expect to catch UnauthorizedException
-      await expect(async () => {
-        await tokenProvider.verifyAccessToken(token);
-      }).rejects.toThrow('Invalid token');
+      const [error, result] = await tokenProvider.verifyAccessToken(token);
+
+      // expect(mockJwt.verify).toHaveBeenCalledWith(token, secretKey);
+      expect(error).toBeInstanceOf(Exception);
     });
-  });
 
-  describe('verifyRefreshToken', () => {
-    it('should verify refresh token correctly', async () => {
-      const token = 'valid-refresh-token';
-      const payload = { userId: '123' };
+    describe('verifyRefreshToken', () => {
+      it('should verify refresh token correctly', async () => {
+        const token = 'valid-refresh-token';
+        const payload = { userId: '123' };
 
-      mockJwt.verify.mockReturnValue(payload as any);
+        mockJwt.verify.mockReturnValue(payload as any);
 
-      const result = await tokenProvider.verifyRefreshToken(token);
+        const [error, result] = await tokenProvider.verifyRefreshToken(token);
 
-      expect(mockJwt.verify).toHaveBeenCalledWith(token, refreshSecretKey);
-      expect(result).toEqual(payload);
+        expect(mockJwt.verify).toHaveBeenCalledWith(token, refreshSecretKey);
+        expect(result).toEqual(payload);
+      });
     });
   });
 });

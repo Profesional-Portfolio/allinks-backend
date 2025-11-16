@@ -25,7 +25,16 @@ export class AuthController {
 
   registerUser = async (req: Request, res: Response) => {
     const data = validate(registerUserDto, req.body);
-    const result = await this.registerUserUseCase.execute(data);
+    const [error, result] = await this.registerUserUseCase.execute(data);
+
+    if (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
 
     // Establecer cookies con los tokens
     res.cookie(
@@ -50,7 +59,16 @@ export class AuthController {
   loginUser = async (req: Request, res: Response) => {
     const data = validate(loginUseDto, req.body);
 
-    const result = await this.loginUserUseCase.execute(data);
+    const [error, result] = await this.loginUserUseCase.execute(data);
+
+    if (error) {
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
 
     // Establecer cookies con los tokens
     res.cookie(
@@ -82,7 +100,17 @@ export class AuthController {
         .json({ error: 'Refresh token is required' });
     }
 
-    const tokens = await this.refreshTokenUseCase.execute(refreshToken);
+    const [error, tokens] =
+      await this.refreshTokenUseCase.execute(refreshToken);
+
+    if (error) {
+      return res.status(HttpStatus.UNAUTHORIZED).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
 
     // Actualizar cookies con los nuevos tokens
     res.cookie(

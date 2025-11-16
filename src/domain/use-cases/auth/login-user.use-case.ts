@@ -1,6 +1,7 @@
 import { AuthRepository } from '../../repositories';
 import { LoginUserDto } from '../../dtos';
 import { TokenProvider, TokenPair } from '../../interfaces';
+import { Exception } from '@/domain/exceptions';
 
 interface LoginUserResponse {
   user: {
@@ -19,23 +20,36 @@ export class LoginUserUseCase {
     private readonly tokenProvider: TokenProvider
   ) {}
 
-  async execute(dto: LoginUserDto): Promise<LoginUserResponse> {
-    const user = await this.authRepository.login(dto);
+  async execute(
+    dto: LoginUserDto
+  ): Promise<[Exception | undefined, LoginUserResponse]> {
+    const [error, user] = await this.authRepository.login(dto);
 
-    const tokens = await this.tokenProvider.generateTokenPair({
+    if (error) {
+      return [error, {} as LoginUserResponse];
+    }
+
+    const [err, tokens] = await this.tokenProvider.generateTokenPair({
       userId: user.id,
       email: user.email,
     });
 
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        first_name: user.first_name,
-        last_name: user.last_name,
+    if (err) {
+      return [err, {} as LoginUserResponse];
+    }
+
+    return [
+      undefined,
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          first_name: user.first_name,
+          last_name: user.last_name,
+        },
+        tokens,
       },
-      tokens,
-    };
+    ];
   }
 }
