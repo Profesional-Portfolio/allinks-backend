@@ -1,5 +1,5 @@
 import { ZodObject } from 'zod';
-import { BadRequestException } from '@/infraestructure/http';
+import { BadRequestException } from '@/domain/exceptions';
 import { formatValidationError } from '@/infraestructure/utils';
 
 export const validate = <T extends ZodObject<any>>(

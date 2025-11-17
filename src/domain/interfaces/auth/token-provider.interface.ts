@@ -1,3 +1,5 @@
+import { Exception } from '@/domain/exceptions';
+
 export interface TokenPayload {
   userId: string;
   email: string;
@@ -10,9 +12,19 @@ export interface TokenPair {
 }
 
 export interface TokenProvider {
-  generateAccessToken(payload: TokenPayload): Promise<string> | string;
-  generateRefreshToken(payload: TokenPayload): Promise<string> | string;
-  generateTokenPair(payload: TokenPayload): Promise<TokenPair> | TokenPair;
-  verifyAccessToken(token: string): Promise<TokenPayload> | TokenPayload;
-  verifyRefreshToken(token: string): Promise<TokenPayload> | TokenPayload;
+  generateAccessToken(
+    payload: TokenPayload
+  ): Promise<[Exception | undefined, string]>;
+  generateRefreshToken(
+    payload: TokenPayload
+  ): Promise<[Exception | undefined, string]>;
+  generateTokenPair(
+    payload: TokenPayload
+  ): Promise<[Exception | undefined, TokenPair]>;
+  verifyAccessToken(
+    token: string
+  ): Promise<[Exception | undefined, TokenPayload]>;
+  verifyRefreshToken(
+    token: string
+  ): Promise<[Exception | undefined, TokenPayload]>;
 }

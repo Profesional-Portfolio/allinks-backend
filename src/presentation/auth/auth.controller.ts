@@ -6,7 +6,7 @@ import {
   LoginUserUseCase,
   RefreshTokenUseCase,
 } from '@/domain/index';
-import { HttpStatus } from '@/infraestructure/http';
+import { StatusCode } from '@/domain/enums';
 import { validate } from '../middlewares';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 import {
@@ -25,7 +25,16 @@ export class AuthController {
 
   registerUser = async (req: Request, res: Response) => {
     const data = validate(registerUserDto, req.body);
-    const result = await this.registerUserUseCase.execute(data);
+    const [error, result] = await this.registerUserUseCase.execute(data);
+
+    if (error) {
+      return res.status(StatusCode.BAD_REQUEST).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
 
     // Establecer cookies con los tokens
     res.cookie(
@@ -40,7 +49,7 @@ export class AuthController {
     );
 
     // Devolver solo la información del usuario (sin tokens)
-    return res.status(HttpStatus.CREATED).json({
+    return res.status(StatusCode.CREATED).json({
       data: {
         user: result.user,
       },
@@ -50,7 +59,16 @@ export class AuthController {
   loginUser = async (req: Request, res: Response) => {
     const data = validate(loginUseDto, req.body);
 
-    const result = await this.loginUserUseCase.execute(data);
+    const [error, result] = await this.loginUserUseCase.execute(data);
+
+    if (error) {
+      return res.status(StatusCode.UNAUTHORIZED).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
 
     // Establecer cookies con los tokens
     res.cookie(
@@ -65,7 +83,7 @@ export class AuthController {
     );
 
     // Devolver solo la información del usuario (sin tokens)
-    return res.status(HttpStatus.OK).json({
+    return res.status(StatusCode.OK).json({
       data: {
         user: result.user,
       },
@@ -78,11 +96,21 @@ export class AuthController {
 
     if (!refreshToken) {
       return res
-        .status(HttpStatus.BAD_REQUEST)
+        .status(StatusCode.BAD_REQUEST)
         .json({ error: 'Refresh token is required' });
     }
 
-    const tokens = await this.refreshTokenUseCase.execute(refreshToken);
+    const [error, tokens] =
+      await this.refreshTokenUseCase.execute(refreshToken);
+
+    if (error) {
+      return res.status(StatusCode.UNAUTHORIZED).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
 
     // Actualizar cookies con los nuevos tokens
     res.cookie(
@@ -96,7 +124,7 @@ export class AuthController {
       refreshTokenCookieOptions
     );
 
-    return res.status(HttpStatus.OK).json({
+    return res.status(StatusCode.OK).json({
       message: 'Tokens refreshed successfully',
     });
   };
@@ -106,12 +134,12 @@ export class AuthController {
     res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, clearCookieOptions);
     res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, clearCookieOptions);
 
-    return res.status(HttpStatus.OK).json({
+    return res.status(StatusCode.OK).json({
       message: 'Logged out successfully',
     });
   };
 
   getProfile = async (req: AuthenticatedRequest, res: Response) => {
-    return res.status(HttpStatus.OK).json({ data: req.user });
+    return res.status(StatusCode.OK).json({ data: req.user });
   };
 }

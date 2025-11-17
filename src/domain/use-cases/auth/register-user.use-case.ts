@@ -1,15 +1,11 @@
 import { AuthRepository } from '../../repositories';
 import { RegisterUserDto } from '../../dtos';
 import { TokenProvider, TokenPair } from '../../interfaces';
+import { Exception } from '@/domain/exceptions';
+import { UserWithoutPassword } from '@/domain/entities';
 
 interface RegisterUserResponse {
-  user: {
-    id: string;
-    email: string;
-    username: string;
-    first_name: string;
-    last_name: string;
-  };
+  user: UserWithoutPassword;
   tokens: TokenPair;
 }
 
@@ -19,23 +15,30 @@ export class RegisterUserUseCase {
     private readonly tokenProvider: TokenProvider
   ) {}
 
-  async execute(dto: RegisterUserDto): Promise<RegisterUserResponse> {
-    const user = await this.authRepository.register(dto);
+  async execute(
+    dto: RegisterUserDto
+  ): Promise<[Exception | undefined, RegisterUserResponse]> {
+    const [error, user] = await this.authRepository.register(dto);
 
-    const tokens = await this.tokenProvider.generateTokenPair({
+    if (error) {
+      return [error, {} as RegisterUserResponse];
+    }
+
+    const [err, tokens] = await this.tokenProvider.generateTokenPair({
       userId: user.id,
       email: user.email,
     });
 
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        first_name: user.first_name,
-        last_name: user.last_name,
+    if (err) {
+      return [err, {} as RegisterUserResponse];
+    }
+
+    return [
+      undefined,
+      {
+        user,
+        tokens,
       },
-      tokens,
-    };
+    ];
   }
 }

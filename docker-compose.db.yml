@@ -4,31 +4,9 @@ services:
   postgres:
     image: postgres:15
     restart: always
-    hostname: postgres_db
-    container_name: postgres_db
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=prisma
+    hostname: devlinks-postgres
+    container_name: devlinks-postgres
+    env_file:
+      - .env.test
     ports:
-      - '5432:5432'
-    networks:
-      - prisma-network
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U prisma -d postgres']
-      interval: 5s
-      timeout: 2s
-      retries: 20
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    command: postgres -c listen_addresses='*'
-    logging:
-      options:
-        max-size: '10m'
-        max-file: '3'
-
-networks:
-  prisma-network:
-
-volumes:
-  postgres_data:
+      - '5433:5432'
