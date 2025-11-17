@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { TokenProvider } from '@/domain/interfaces';
-import { UnauthorizedException } from '@/infraestructure/http';
+import { UnauthorizedException } from '@/domain/exceptions';
 import { COOKIE_NAMES } from '@/infraestructure/utils';
 
 export interface AuthenticatedRequest extends Request {

@@ -6,7 +6,7 @@ import {
   LoginUserUseCase,
   RefreshTokenUseCase,
 } from '@/domain/index';
-import { HttpStatus } from '@/infraestructure/http';
+import { StatusCode } from '@/domain/enums';
 import { validate } from '../middlewares';
 import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 import {
@@ -28,7 +28,7 @@ export class AuthController {
     const [error, result] = await this.registerUserUseCase.execute(data);
 
     if (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
+      return res.status(StatusCode.BAD_REQUEST).json({
         error: {
           code: error.statusCode,
           message: error.message,
@@ -49,7 +49,7 @@ export class AuthController {
     );
 
     // Devolver solo la información del usuario (sin tokens)
-    return res.status(HttpStatus.CREATED).json({
+    return res.status(StatusCode.CREATED).json({
       data: {
         user: result.user,
       },
@@ -62,7 +62,7 @@ export class AuthController {
     const [error, result] = await this.loginUserUseCase.execute(data);
 
     if (error) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({
+      return res.status(StatusCode.UNAUTHORIZED).json({
         error: {
           code: error.statusCode,
           message: error.message,
@@ -83,7 +83,7 @@ export class AuthController {
     );
 
     // Devolver solo la información del usuario (sin tokens)
-    return res.status(HttpStatus.OK).json({
+    return res.status(StatusCode.OK).json({
       data: {
         user: result.user,
       },
@@ -96,7 +96,7 @@ export class AuthController {
 
     if (!refreshToken) {
       return res
-        .status(HttpStatus.BAD_REQUEST)
+        .status(StatusCode.BAD_REQUEST)
         .json({ error: 'Refresh token is required' });
     }
 
@@ -104,7 +104,7 @@ export class AuthController {
       await this.refreshTokenUseCase.execute(refreshToken);
 
     if (error) {
-      return res.status(HttpStatus.UNAUTHORIZED).json({
+      return res.status(StatusCode.UNAUTHORIZED).json({
         error: {
           code: error.statusCode,
           message: error.message,
@@ -124,7 +124,7 @@ export class AuthController {
       refreshTokenCookieOptions
     );
 
-    return res.status(HttpStatus.OK).json({
+    return res.status(StatusCode.OK).json({
       message: 'Tokens refreshed successfully',
     });
   };
@@ -134,12 +134,12 @@ export class AuthController {
     res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, clearCookieOptions);
     res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, clearCookieOptions);
 
-    return res.status(HttpStatus.OK).json({
+    return res.status(StatusCode.OK).json({
       message: 'Logged out successfully',
     });
   };
 
   getProfile = async (req: AuthenticatedRequest, res: Response) => {
-    return res.status(HttpStatus.OK).json({ data: req.user });
+    return res.status(StatusCode.OK).json({ data: req.user });
   };
 }

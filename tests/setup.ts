@@ -1,7 +1,10 @@
 import { PrismaClient } from '@/generated/prisma';
 import { mockDeep, mockReset, DeepMockProxy } from 'jest-mock-extended';
+import { toBeEmpty } from 'jest-extended';
 
 import prismadb from '@/infraestructure/prismadb';
+
+expect.extend({ toBeEmpty });
 
 jest.mock('@/infraestructure/prismadb', () => {
   return {

@@ -3,7 +3,6 @@ import { UserWithoutPassword } from '../entities';
 import { Exception } from '../exceptions';
 
 export interface AuthDatasource {
-  // regresa una tupla con el user y un posible error
   register(
     payload: RegisterUserDto
   ): Promise<[Exception | undefined, UserWithoutPassword]>;

@@ -3,9 +3,7 @@ import { AuthDatasourceImpl } from '../../../src/infraestructure/datasources/aut
 import { BcryptPasswordHasherAdapter } from '@/infraestructure/adapters';
 import { PasswordHasher } from '@/domain/interfaces';
 import { validRegisterPayload } from '../../payloads';
-import { mockUser, mockUserWithoutPassword } from '../../__mocks__';
-import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
-import { PrismaClient } from '@/generated/prisma';
+import { mockUser } from '../../__mocks__';
 import { prismaMock } from '../../setup';
 
 describe('AuthRepository Integration Tests', () => {
@@ -21,16 +19,13 @@ describe('AuthRepository Integration Tests', () => {
 
   describe('findByEmail', () => {
     it('should find user by email', async () => {
-      // (mockCtx.prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-
       (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
       const [error, result] =
         await authRepository.findUserByEmail('test@test.com');
 
-      console.log({ result });
-
       expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
+      expect(error).toBeUndefined();
       expect(result).toHaveProperty('id');
     });
 
@@ -41,7 +36,8 @@ describe('AuthRepository Integration Tests', () => {
         'nonexistent@test.com'
       );
 
-      expect(result).not.toHaveProperty('id');
+      expect(error).toBeInstanceOf(Error);
+      expect(result).toBeEmpty();
     });
 
     it('should handle database errors', async () => {
@@ -53,7 +49,7 @@ describe('AuthRepository Integration Tests', () => {
         await authRepository.findUserByEmail('test@test.com');
 
       expect(error).toBeInstanceOf(Error);
-      expect(result).not.toHaveProperty('id');
+      expect(result).toBeEmpty();
     });
   });
 
@@ -64,7 +60,8 @@ describe('AuthRepository Integration Tests', () => {
       const [err, result] = await authRepository.findUserById('123');
 
       expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
-      expect(result).toHaveProperty('id');
+      expect(err).toBeUndefined();
+      expect(result).not.toBeEmpty();
     });
 
     it('should return null if user not found', async () => {
@@ -73,18 +70,13 @@ describe('AuthRepository Integration Tests', () => {
       const [error, result] =
         await authRepository.findUserById('nonexistent-id');
 
-      expect(result).not.toHaveProperty('id', 'nonexistent-id');
+      expect(error).toBeInstanceOf(Error);
+      expect(result).toBeEmpty();
     });
   });
 
   describe('create', () => {
     it('should create new user', async () => {
-      const userData = {
-        email: 'newuser@test.com',
-        name: 'New User',
-        password: 'hashed-password',
-      };
-
       (prismaMock.user.create as jest.Mock).mockResolvedValue(mockUser);
 
       const [err, result] = await authRepository.register(validRegisterPayload);
@@ -102,7 +94,7 @@ describe('AuthRepository Integration Tests', () => {
       const [err, result] = await authRepository.register(validRegisterPayload);
 
       expect(err).toBeInstanceOf(Error);
-      expect(result).not.toHaveProperty('id');
+      expect(result).toBeEmpty();
     });
   });
 

@@ -6,7 +6,6 @@ import {
   UserWithoutPassword,
 } from '@/domain/index';
 import { PasswordHasher } from '@/domain/interfaces';
-// import { prismadb } from '@/infraestructure/prismadb';
 import {
   BadRequestException,
   UnauthorizedException,

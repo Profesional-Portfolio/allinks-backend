@@ -1,4 +1,3 @@
-import { UnauthorizedException } from '@/infraestructure/http';
 import { JwtTokenProviderAdapter } from '../../../src/infraestructure/adapters/jwt-token-provider.adapter';
 import * as jwt from 'jsonwebtoken';
 import { Exception } from '@/domain/exceptions';
