@@ -1,0 +1,17 @@
+export enum Platforms {
+  REDDIT = 'reddit',
+  SNAPCHAT = 'snapchat',
+  LINKEDIN = 'linkedin',
+  THREADS = 'threads',
+  YOUTUBE = 'youtube',
+  INSTAGRAM = 'instagram',
+  WEBSITE = 'website',
+  TIKTOK = 'tiktok',
+  PINTEREST = 'pinterest',
+  GITHUB = 'github',
+  TWITCH = 'twitch',
+  DISCORD = 'discord',
+  FACEBOOK = 'facebook',
+  MEDIUM = 'medium',
+  X = 'X',
+}

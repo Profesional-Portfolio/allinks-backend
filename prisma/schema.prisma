@@ -57,12 +57,12 @@ model Link {
 
 model Platform {
   id           String   @id @default(uuid())
-  name         String
+  name         String   @unique
   display_name String
   url_pattern  String
   icon_url     String
-  base_url     String
-  is_active    String
+  base_url     String?
+  is_active    Boolean  @default(true)
   created_at   DateTime @default(now())
 }
 

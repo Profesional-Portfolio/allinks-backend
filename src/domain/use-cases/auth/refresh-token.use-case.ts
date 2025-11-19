@@ -15,7 +15,7 @@ export class RefreshTokenUseCase {
     }
 
     const [error, tokens] = await this.tokenProvider.generateTokenPair({
-      userId: payload.userId,
+      id: payload.id,
       email: payload.email,
     });
 

@@ -25,7 +25,7 @@ export class RegisterUserUseCase {
     }
 
     const [err, tokens] = await this.tokenProvider.generateTokenPair({
-      userId: user.id,
+      id: user.id,
       email: user.email,
     });
 

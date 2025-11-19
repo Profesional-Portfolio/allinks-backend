@@ -15,7 +15,7 @@ import {
 
 import { AuthMiddleware } from '../middlewares';
 
-export default class AuthRoutes {
+export class AuthRoutes {
   static get routes(): Router {
     // Adapters
     const tokenProvider = new JwtTokenProviderAdapter();
