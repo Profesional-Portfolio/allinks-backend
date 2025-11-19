@@ -8,7 +8,6 @@ import {
 } from '@/domain/index';
 import { StatusCode } from '@/domain/enums';
 import { validate } from '../middlewares';
-import { AuthenticatedRequest } from '../middlewares/auth.middleware';
 import {
   COOKIE_NAMES,
   accessTokenCookieOptions,
@@ -139,7 +138,7 @@ export class AuthController {
     });
   };
 
-  getProfile = async (req: AuthenticatedRequest, res: Response) => {
+  getProfile = async (req: Request, res: Response) => {
     return res.status(StatusCode.OK).json({ data: req.user });
   };
 }

@@ -1,7 +1,7 @@
 import { Exception } from '@/domain/exceptions';
 
 export interface TokenPayload {
-  userId: string;
+  id: string;
   email: string;
   [key: string]: unknown;
 }

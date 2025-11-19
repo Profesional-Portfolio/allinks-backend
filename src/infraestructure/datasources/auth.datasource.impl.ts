@@ -2,16 +2,16 @@ import {
   AuthDatasource,
   LoginUserDto,
   RegisterUserDto,
-  UserEntity,
   UserWithoutPassword,
 } from '@/domain/index';
 import { PasswordHasher } from '@/domain/interfaces';
+import { UserMapper } from '../mappers';
 import {
+  Exception,
+  InternalServerErrorException,
   BadRequestException,
   UnauthorizedException,
-} from '@/infraestructure/http';
-import { UserMapper } from '../mappers';
-import { Exception, InternalServerErrorException } from '@/domain/exceptions';
+} from '@/domain/exceptions';
 import { PrismaClient } from '@/generated/prisma';
 
 export class AuthDatasourceImpl implements AuthDatasource {

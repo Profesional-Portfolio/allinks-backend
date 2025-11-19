@@ -1,16 +1,6 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
-interface EnvVard {
-  PORT: number;
-  JWT_ACCESS_SECRET: string;
-  JWT_REFRESH_SECRET: string;
-  JWT_ACCESS_EXPIRES_IN: string;
-  JWT_REFRESH_EXPIRES_IN: string;
-  NODE_ENV: string;
-  COOKIE_DOMAIN?: string;
-}
-
 const envSchema = z.object({
   PORT: z.coerce.number(),
   JWT_ACCESS_SECRET: z.string(),
@@ -21,10 +11,12 @@ const envSchema = z.object({
   COOKIE_DOMAIN: z.string().optional(),
 });
 
-const parsed = envSchema.safeParse(process.env);
+export type EnvType = z.infer<typeof envSchema>;
 
-if (!parsed.success) {
-  throw new Error(parsed.error.message);
+const { success, error, data } = envSchema.safeParse(process.env);
+
+if (!success) {
+  throw new Error(error.message);
 }
 
-export const ENV = parsed.data;
+export const ENV = data;
