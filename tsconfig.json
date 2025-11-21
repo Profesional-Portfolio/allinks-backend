@@ -1,8 +1,11 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
-    "module": "preserve",
-    "moduleResolution": "bundler",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es2023",
+    "strict": true,
+    "esModuleInterop": true,
     "ignoreDeprecations": "6.0",
     "allowJs": true,
     "strictPropertyInitialization": false,
