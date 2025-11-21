@@ -64,7 +64,6 @@ export class AuthDatasourceImpl implements AuthDatasource {
 
       return [undefined, mappedUser];
     } catch (error) {
-      // throw error;
       const err = new InternalServerErrorException();
       return [err, {} as UserWithoutPassword];
     }
