@@ -9,6 +9,14 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
   NODE_ENV: z.string().default('development'),
   COOKIE_DOMAIN: z.string().optional(),
+  SMTP_HOST: z.string(),
+  SMTP_PORT: z.string(),
+  SMTP_USER: z.string(),
+  SMTP_PASSWORD: z.string(),
+  SMTP_FROM_EMAIL: z.string(),
+  SMTP_FROM_NAME: z.string(),
+  SMTP_SECURE: z.string().default('false'),
+  MAIN_FRONTEND_HOST: z.string().optional(),
 });
 
 export type EnvType = z.infer<typeof envSchema>;

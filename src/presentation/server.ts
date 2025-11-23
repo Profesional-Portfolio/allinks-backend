@@ -6,6 +6,7 @@ import cookies from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from '../config';
 import { StatusCode } from '@/domain/enums';
+import { Exception } from '@/domain/exceptions';
 
 interface ServerOptions {
   port: number;
@@ -33,15 +34,6 @@ export default class Server {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
-    this.app.use(
-      (err: Error, _: Request, res: Response, next: NextFunction) => {
-        console.error('Fatal error:', err);
-        return res
-          .status(StatusCode.INTERNAL_SERVER_ERROR)
-          .json({ message: 'Internal server error' });
-      }
-    );
-
     this.app.get('/', (_, res) => {
       res.send('Hello world from the backend!!!!').status(StatusCode.OK);
     });
@@ -60,6 +52,16 @@ export default class Server {
 
     this.app.use(this.routes);
     this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+    this.app.use(
+      (err: Error, _: Request, res: Response, next: NextFunction) => {
+        const exception = err as Exception;
+        const statusCode =
+          exception.statusCode || StatusCode.INTERNAL_SERVER_ERROR;
+        const message = exception.message || 'Internal server error';
+        return res.status(statusCode).json({ message });
+      }
+    );
 
     this.app.use((_, res) => {
       res.status(StatusCode.NOT_FOUND).json({ message: 'Not found' });

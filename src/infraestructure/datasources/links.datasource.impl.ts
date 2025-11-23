@@ -12,7 +12,7 @@ import {
   Exception,
   NotFoundException,
 } from '@/domain/exceptions';
-import { PrismaClient } from '@/generated/prisma';
+import { PrismaClient } from '@/generated/prisma/client';
 
 export class LinksDataSourceImpl implements LinksDataSource {
   constructor(private readonly prismadb: PrismaClient) {}
@@ -63,9 +63,6 @@ export class LinksDataSourceImpl implements LinksDataSource {
 
       if (platformData) {
         const regex = new RegExp(platformData.url_pattern, 'i');
-        console.log({ pattern: platformData.url_pattern });
-        console.log({ url });
-        console.log({ value: regex.test(url) });
         if (!regex.test(url)) {
           return [new BadRequestException('Invalid URL'), {} as LinkEntity];
         }

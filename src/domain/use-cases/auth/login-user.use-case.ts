@@ -25,7 +25,7 @@ export class LoginUserUseCase {
   ): Promise<[Exception | undefined, LoginUserResponse]> {
     const [error, user] = await this.authRepository.login(dto);
 
-    if (error) {
+    if (error || !user) {
       return [error, {} as LoginUserResponse];
     }
 

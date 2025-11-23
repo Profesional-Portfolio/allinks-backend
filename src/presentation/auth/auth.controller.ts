@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 import {
   registerUserDto,
   loginUseDto,
-  RegisterUserUseCase,
-  LoginUserUseCase,
-  RefreshTokenUseCase,
-} from '@/domain/index';
+  verifyEmailDto,
+  forgotPasswordDto,
+  validateTokenDto,
+  resetPasswordDto,
+  resendEmailVerificationDto,
+} from '@/domain/dtos';
 import { StatusCode } from '@/domain/enums';
 import { validate } from '../middlewares';
 import {
@@ -14,13 +16,99 @@ import {
   refreshTokenCookieOptions,
   clearCookieOptions,
 } from '@/infraestructure/utils';
+import {
+  RegisterUserUseCase,
+  LoginUserUseCase,
+  RefreshTokenUseCase,
+  SendWelcomeEmailUseCase,
+  VerifyEmailUseCase,
+  ResetPasswordUseCase,
+  ForgotPasswordUseCase,
+  ResendVerificationEmailUseCase,
+  ValidateResetTokenUseCase,
+} from '@/domain/use-cases/auth';
 
 export class AuthController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
-    private readonly refreshTokenUseCase: RefreshTokenUseCase
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    private readonly sendWelcomeEmailUseCase: SendWelcomeEmailUseCase,
+    private readonly verifyEmailUseCase: VerifyEmailUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
+    private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
+    private readonly resendVerificationEmailUseCase: ResendVerificationEmailUseCase,
+    private readonly validateTokenUseCase: ValidateResetTokenUseCase
   ) {}
+
+  validateToken = async (req: Request, res: Response) => {
+    const { token } = validate(validateTokenDto, req.body);
+
+    const [error, message] = await this.validateTokenUseCase.execute(token);
+
+    if (error) {
+      return res.status(StatusCode.BAD_REQUEST).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
+
+    return res.status(StatusCode.OK).json({ message });
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    const data = validate(resetPasswordDto, req.body);
+    const [error, message] = await this.resetPasswordUseCase.execute(data);
+
+    if (error) {
+      return res.status(StatusCode.BAD_REQUEST).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
+
+    return res.status(StatusCode.OK).json({ message });
+  };
+
+  forgotPassword = async (req: Request, res: Response) => {
+    const data = validate(forgotPasswordDto, req.body);
+
+    const [exception, message] = await this.forgotPasswordUseCase.execute(data);
+
+    if (exception) {
+      return res.status(StatusCode.BAD_REQUEST).json({
+        error: {
+          code: exception.statusCode,
+          message: exception.message,
+        },
+      });
+    }
+
+    return res.status(StatusCode.OK).json({
+      message,
+    });
+  };
+
+  resendVerificationEmail = async (req: Request, res: Response) => {
+    const data = validate(resendEmailVerificationDto, req.body);
+    const [error, result] =
+      await this.resendVerificationEmailUseCase.execute(data);
+
+    if (error) {
+      return res.status(StatusCode.BAD_REQUEST).json({
+        error: {
+          code: error.statusCode,
+          message: error.message,
+        },
+      });
+    }
+
+    return res.status(StatusCode.OK).json(result);
+  };
 
   registerUser = async (req: Request, res: Response) => {
     const data = validate(registerUserDto, req.body);
@@ -46,6 +134,12 @@ export class AuthController {
       result.tokens.refreshToken,
       refreshTokenCookieOptions
     );
+
+    const {
+      user: { id, email, first_name },
+    } = result;
+
+    await this.sendWelcomeEmailUseCase.execute(id, email, first_name);
 
     // Devolver solo la información del usuario (sin tokens)
     return res.status(StatusCode.CREATED).json({
@@ -135,6 +229,34 @@ export class AuthController {
 
     return res.status(StatusCode.OK).json({
       message: 'Logged out successfully',
+    });
+  };
+
+  verifyEmail = async (req: Request, res: Response) => {
+    const token = req.query.token;
+
+    if (!token) {
+      return res
+        .status(StatusCode.BAD_REQUEST)
+        .json({ error: 'Token is required' });
+    }
+
+    const validatedToken = validate(verifyEmailDto, { token });
+
+    const [exception, message] =
+      await this.verifyEmailUseCase.execute(validatedToken);
+
+    if (exception) {
+      return res.status(StatusCode.BAD_REQUEST).json({
+        error: {
+          code: exception.statusCode,
+          message: exception.message,
+        },
+      });
+    }
+
+    return res.status(StatusCode.OK).json({
+      message,
     });
   };
 

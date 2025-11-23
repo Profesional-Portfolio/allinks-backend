@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { emailDto } from '../shared';
 
 export const registerUserDto = z.object({
-  email: z.email(),
-  password: z.string().min(8),
+  email: emailDto.shape.email,
+  password: z.string().min(8).trim(),
   username: z.string().min(3).max(50),
   first_name: z.string().max(100),
   last_name: z.string().max(100),

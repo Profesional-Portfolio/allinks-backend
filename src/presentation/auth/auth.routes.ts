@@ -6,13 +6,20 @@ import prismadb from '@/infraestructure/prismadb';
 import {
   JwtTokenProviderAdapter,
   BcryptPasswordHasherAdapter,
+  getEmailAdapter,
 } from '@/infraestructure/adapters';
+
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
   RefreshTokenUseCase,
-} from '@/domain/index';
-
+  SendWelcomeEmailUseCase,
+  VerifyEmailUseCase,
+  ResetPasswordUseCase,
+  ForgotPasswordUseCase,
+  ResendVerificationEmailUseCase,
+  ValidateResetTokenUseCase,
+} from '@/domain/use-cases/auth';
 import { AuthMiddleware } from '../middlewares';
 
 export class AuthRoutes {
@@ -20,27 +27,64 @@ export class AuthRoutes {
     // Adapters
     const tokenProvider = new JwtTokenProviderAdapter();
     const passwordHasher = new BcryptPasswordHasherAdapter();
+    const emailService = getEmailAdapter();
 
     // Data layer
     const datasource = new AuthDatasourceImpl(passwordHasher, prismadb);
     const authRepository = new AuthRepositoryImpl(datasource);
 
     // Use cases
-    const registerUserUseCase = new RegisterUserUseCase(
+    const sendWelcomeEmailUseCase = new SendWelcomeEmailUseCase(
       authRepository,
+      emailService
+    );
+
+    const verifyEmailUseCase = new VerifyEmailUseCase(authRepository);
+
+    const resendVerificationEmailUseCase = new ResendVerificationEmailUseCase(
+      authRepository,
+      sendWelcomeEmailUseCase
+    );
+
+    const forgotPasswordUseCase = new ForgotPasswordUseCase(
+      authRepository,
+      emailService
+    );
+
+    const validateResetTokenUseCase = new ValidateResetTokenUseCase(
+      authRepository
+    );
+
+    const resetPasswordUseCase = new ResetPasswordUseCase(
+      authRepository,
+      passwordHasher,
+      emailService
+    );
+
+    const registerUserUseCase = new RegisterUserUseCase(
+      authRepository, // Use cases
+
       tokenProvider
     );
+
     const loginUserUseCase = new LoginUserUseCase(
       authRepository,
       tokenProvider
     );
+
     const refreshTokenUseCase = new RefreshTokenUseCase(tokenProvider);
 
     // Controller & Middleware
     const controller = new AuthController(
       registerUserUseCase,
       loginUserUseCase,
-      refreshTokenUseCase
+      refreshTokenUseCase,
+      sendWelcomeEmailUseCase,
+      verifyEmailUseCase,
+      resetPasswordUseCase,
+      forgotPasswordUseCase,
+      resendVerificationEmailUseCase,
+      validateResetTokenUseCase
     );
     const authMiddleware = new AuthMiddleware(tokenProvider);
 
@@ -130,6 +174,12 @@ export class AuthRoutes {
     router.post('/refresh', controller.refreshToken);
     router.post('/logout', authMiddleware.authenticate, controller.logout);
     router.get('/profile', authMiddleware.authenticate, controller.getProfile);
+
+    router.post('/verify-email', controller.verifyEmail);
+    router.post('/resend-verification', controller.resendVerificationEmail);
+    router.post('/forgot-password', controller.forgotPassword);
+    router.post('/reset-password', controller.resetPassword);
+    router.post('/validate-token', controller.validateToken);
 
     return router;
   }
