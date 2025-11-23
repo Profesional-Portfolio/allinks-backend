@@ -28,7 +28,7 @@ services:
       - app-network
 
   prisma-studio:
-    image: node:lts-alpine3.17
+    image: node:lts-alpine
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app

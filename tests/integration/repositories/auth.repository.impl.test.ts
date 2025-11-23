@@ -106,7 +106,7 @@ describe('AuthRepository Integration Tests', () => {
         email: 'test@test.com',
         name: 'Test User',
         password: 'hashed-password',
-        createdAt: new Date(),
+        created_at: new Date(),
         updatedAt: new Date(),
         lastLoginAt: new Date(),
       };

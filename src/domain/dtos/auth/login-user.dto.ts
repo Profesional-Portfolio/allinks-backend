@@ -1,7 +1,8 @@
 import { z } from 'zod';
+import { emailDto } from '../shared';
 
 export const loginUseDto = z.object({
-  email: z.email(),
+  email: emailDto.shape.email,
   password: z.string(),
 });
 

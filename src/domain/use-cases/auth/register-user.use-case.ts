@@ -3,6 +3,7 @@ import { RegisterUserDto } from '../../dtos';
 import { TokenProvider, TokenPair } from '../../interfaces';
 import { Exception } from '@/domain/exceptions';
 import { UserWithoutPassword } from '@/domain/entities';
+import { SendWelcomeEmailUseCase } from './send-welcome-email.use-case';
 
 interface RegisterUserResponse {
   user: UserWithoutPassword;
@@ -20,7 +21,7 @@ export class RegisterUserUseCase {
   ): Promise<[Exception | undefined, RegisterUserResponse]> {
     const [error, user] = await this.authRepository.register(dto);
 
-    if (error) {
+    if (!user) {
       return [error, {} as RegisterUserResponse];
     }
 
