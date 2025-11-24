@@ -997,7 +997,7 @@ tests/
 
 ```bash
 # Start all services
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.dev.yml up --build
 
 # View logs
 docker-compose -f docker-compose.dev.yml logs -f
@@ -1245,7 +1245,7 @@ describe('YourUseCase', () => {
 #### Create Migration
 
 ```bash
-pnpm prisma migrate dev --name your_migration_name
+pnpm dlx prisma migrate dev --name your_migration_name
 ```
 
 #### Apply Migrations
@@ -1507,7 +1507,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
   
-**[⬆ Back to Top](#-Allinks-api)**82
+**[⬆ Back to Top](#-Allinks-api)**
 
 Made with ❤️ by [deivid182](https://github.com/deivid182)
 
