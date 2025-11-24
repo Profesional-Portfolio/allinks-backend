@@ -20,7 +20,9 @@ import {
   ResendVerificationEmailUseCase,
   ValidateResetTokenUseCase,
 } from '@/domain/use-cases/auth';
-import { AuthMiddleware } from '../middlewares';
+import { AuthMiddleware, upload } from '../middlewares';
+import { UploadImageUseCase } from '@/domain/index';
+import { CloudinaryImageUploaderAdapter } from '@/infraestructure/adapters/cloudinary-image-uploader.adapter';
 
 export class AuthRoutes {
   static get routes(): Router {
@@ -28,6 +30,7 @@ export class AuthRoutes {
     const tokenProvider = new JwtTokenProviderAdapter();
     const passwordHasher = new BcryptPasswordHasherAdapter();
     const emailService = getEmailAdapter();
+    const uploadFileService = new CloudinaryImageUploaderAdapter();
 
     // Data layer
     const datasource = new AuthDatasourceImpl(passwordHasher, prismadb);
@@ -73,6 +76,7 @@ export class AuthRoutes {
     );
 
     const refreshTokenUseCase = new RefreshTokenUseCase(tokenProvider);
+    const uploadImageUseCase = new UploadImageUseCase(uploadFileService);
 
     // Controller & Middleware
     const controller = new AuthController(
@@ -84,7 +88,8 @@ export class AuthRoutes {
       resetPasswordUseCase,
       forgotPasswordUseCase,
       resendVerificationEmailUseCase,
-      validateResetTokenUseCase
+      validateResetTokenUseCase,
+      uploadImageUseCase
     );
     const authMiddleware = new AuthMiddleware(tokenProvider);
 
@@ -169,7 +174,11 @@ export class AuthRoutes {
      *
      */
 
-    router.post('/register', controller.registerUser);
+    router.post(
+      '/register',
+      upload.single('avatar_url'),
+      controller.registerUser
+    );
     router.post('/login', controller.loginUser);
     router.post('/refresh', controller.refreshToken);
     router.post('/logout', authMiddleware.authenticate, controller.logout);
