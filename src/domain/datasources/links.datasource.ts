@@ -18,6 +18,10 @@ export interface LinksDataSource {
   getLinks(
     userIdDto: UserIdDto
   ): Promise<[Exception | undefined, LinkEntity[]]>;
+
+  getLinksByIds(
+    payload: UserIdDto & { ids: string[] }
+  ): Promise<[Exception | undefined, LinkEntity[]]>;
   getLinkById(
     payload: UserIdDto & IdDto
   ): Promise<[Exception | undefined, LinkEntity | null]>;

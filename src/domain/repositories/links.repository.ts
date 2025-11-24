@@ -18,6 +18,10 @@ export interface LinksRepository {
   getLinks(
     userIdDto: UserIdDto
   ): Promise<[Exception | undefined, LinkEntity[]]>;
+
+  getLinksByIds(
+    payload: UserIdDto & { ids: string[] }
+  ): Promise<[Exception | undefined, LinkEntity[]]>;
   getLinkById(
     payload: IdDto
   ): Promise<[Exception | undefined, LinkEntity | null]>;
