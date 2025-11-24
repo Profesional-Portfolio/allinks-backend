@@ -27,6 +27,7 @@ import {
   ResendVerificationEmailUseCase,
   ValidateResetTokenUseCase,
 } from '@/domain/use-cases/auth';
+import { UploadImageUseCase } from '@/domain/index';
 
 export class AuthController {
   constructor(
@@ -38,7 +39,8 @@ export class AuthController {
     private readonly resetPasswordUseCase: ResetPasswordUseCase,
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
     private readonly resendVerificationEmailUseCase: ResendVerificationEmailUseCase,
-    private readonly validateTokenUseCase: ValidateResetTokenUseCase
+    private readonly validateTokenUseCase: ValidateResetTokenUseCase,
+    private readonly uploadImageUseCase: UploadImageUseCase
   ) {}
 
   validateToken = async (req: Request, res: Response) => {
@@ -112,6 +114,14 @@ export class AuthController {
 
   registerUser = async (req: Request, res: Response) => {
     const data = validate(registerUserDto, req.body);
+
+    // upload image
+
+    if (req.file) {
+      const image = await this.uploadImageUseCase.execute(req.file.buffer);
+      data.avatar_url = image.url;
+    }
+
     const [error, result] = await this.registerUserUseCase.execute(data);
 
     if (error) {

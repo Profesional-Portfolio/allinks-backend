@@ -17,6 +17,9 @@ const envSchema = z.object({
   SMTP_FROM_NAME: z.string(),
   SMTP_SECURE: z.string().default('false'),
   MAIN_FRONTEND_HOST: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
 });
 
 export type EnvType = z.infer<typeof envSchema>;
