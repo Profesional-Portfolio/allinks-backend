@@ -3,7 +3,7 @@ import { idDto, userIdDto } from '../shared';
 
 export const reorderLinksDto = z
   .object({
-    links: z.array(idDto.extend({ order: z.number() })),
+    links: z.array(idDto.extend({ display_order: z.number() })),
   })
   .extend(userIdDto.shape);
 

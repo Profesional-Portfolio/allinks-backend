@@ -122,6 +122,6 @@ export class LinksController {
       });
     }
 
-    return res.status(StatusCode.OK).json(result);
+    return res.status(StatusCode.OK).json({ result });
   };
 }

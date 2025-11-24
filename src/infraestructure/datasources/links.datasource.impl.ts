@@ -103,6 +103,30 @@ export class LinksDataSourceImpl implements LinksDataSource {
     }
   }
 
+  async getLinksByIds(
+    payload: UserIdDto & { ids: string[] }
+  ): Promise<[Exception | undefined, LinkEntity[]]> {
+    try {
+      const { user_id, ids } = payload;
+      const links = await this.prismadb.link.findMany({
+        where: {
+          id: {
+            in: ids,
+          },
+          user_id,
+        },
+        orderBy: {
+          display_order: 'asc',
+        },
+      });
+
+      return [undefined, links];
+    } catch (error) {
+      const err = new Exception('Error getting links', 500);
+      return [err, [] as LinkEntity[]];
+    }
+  }
+
   async getLinkById(
     payload: UserIdDto & IdDto
   ): Promise<[Exception | undefined, LinkEntity | null]> {
@@ -227,12 +251,13 @@ export class LinksDataSourceImpl implements LinksDataSource {
 
       await this.prismadb.$transaction(
         links.map(link => {
+          const { id, display_order } = link;
           return this.prismadb.link.update({
             where: {
-              id: link.id,
+              id,
             },
             data: {
-              display_order: link.order,
+              display_order,
             },
           });
         })

@@ -19,6 +19,12 @@ export class LinksRepositoryImpl implements LinksRepository {
     return await this.linkDataSource.getLinks(userIdDto);
   }
 
+  async getLinksByIds(
+    payload: UserIdDto & { ids: string[] }
+  ): Promise<[Exception | undefined, LinkEntity[]]> {
+    return await this.linkDataSource.getLinksByIds(payload);
+  }
+
   async createLink(
     payload: CreateLinkDto
   ): Promise<[Exception | undefined, LinkEntity | null]> {
