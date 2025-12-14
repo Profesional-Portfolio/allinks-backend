@@ -1,6 +1,7 @@
 import { z, ZodObject } from 'zod';
 import { BadRequestException } from '@/domain/exceptions';
 import { formatValidationError } from '@/infraestructure/utils';
+import { Response } from 'express';
 
 export const validate = <T extends ZodObject<any>>(
   schema: T,
