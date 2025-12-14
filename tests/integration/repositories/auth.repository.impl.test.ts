@@ -4,7 +4,7 @@ import { BcryptPasswordHasherAdapter } from '@/infraestructure/adapters';
 import { PasswordHasher } from '@/domain/interfaces';
 import { validRegisterPayload } from '../../payloads';
 import { mockUser } from '../../__mocks__';
-import { prismaMock } from '../../setup';
+import { prismaMock } from '../../setup-unit';
 
 describe('AuthRepository Integration Tests', () => {
   let authRepository: AuthRepositoryImpl;
@@ -37,7 +37,7 @@ describe('AuthRepository Integration Tests', () => {
       );
 
       expect(error).toBeInstanceOf(Error);
-      expect(result).toBeEmpty();
+      expect(result).toBeNull();
     });
 
     it('should handle database errors', async () => {
@@ -49,7 +49,7 @@ describe('AuthRepository Integration Tests', () => {
         await authRepository.findUserByEmail('test@test.com');
 
       expect(error).toBeInstanceOf(Error);
-      expect(result).toBeEmpty();
+      expect(result).toBeNull();
     });
   });
 
@@ -61,7 +61,7 @@ describe('AuthRepository Integration Tests', () => {
 
       expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
       expect(err).toBeUndefined();
-      expect(result).not.toBeEmpty();
+      expect(result).not.toBeNull();
     });
 
     it('should return null if user not found', async () => {
@@ -71,7 +71,7 @@ describe('AuthRepository Integration Tests', () => {
         await authRepository.findUserById('nonexistent-id');
 
       expect(error).toBeInstanceOf(Error);
-      expect(result).toBeEmpty();
+      expect(result).toBeNull();
     });
   });
 
@@ -83,7 +83,7 @@ describe('AuthRepository Integration Tests', () => {
 
       expect(prismaMock.user.create).toHaveBeenCalledTimes(1);
       expect(err).toBeUndefined();
-      expect(result.id).toBeDefined();
+      expect(result).not.toBeNull();
     });
 
     it('should throw error if email already exists', async () => {
@@ -94,7 +94,7 @@ describe('AuthRepository Integration Tests', () => {
       const [err, result] = await authRepository.register(validRegisterPayload);
 
       expect(err).toBeInstanceOf(Error);
-      expect(result).toBeEmpty();
+      expect(result).toBeNull();
     });
   });
 

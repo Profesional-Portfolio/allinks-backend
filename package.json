@@ -64,6 +64,7 @@
     "@types/multer": "^2.0.0",
     "@types/node": "^24.9.1",
     "@types/nodemailer": "^7.0.4",
+    "@types/supertest": "^6.0.3",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/utils": "^8.46.2",

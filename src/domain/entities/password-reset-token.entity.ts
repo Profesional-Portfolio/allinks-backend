@@ -3,7 +3,7 @@ export class PasswordResetTokenEntity {
   public user_id: string;
   public token: string;
   public expires_at: Date;
-  public used_at: Date;
+  public used_at: Date | null;
   public created_at: Date;
 
   constructor(
@@ -11,7 +11,7 @@ export class PasswordResetTokenEntity {
     user_id: string,
     token: string,
     expires_at: Date,
-    used_at: Date,
+    used_at: Date | null,
     created_at: Date
   ) {
     this.id = id;

@@ -13,6 +13,7 @@ import {
   NotFoundException,
 } from '@/domain/exceptions';
 import { PrismaClient } from '@/generated/prisma/client';
+import { LinkMapper } from '../mappers';
 
 export class LinksDataSourceImpl implements LinksDataSource {
   constructor(private readonly prismadb: PrismaClient) {}
@@ -68,17 +69,19 @@ export class LinksDataSourceImpl implements LinksDataSource {
         }
       }
 
-      const link = await this.prismadb.link.create({
+      const linkCreated = await this.prismadb.link.create({
         data: {
           ...payload,
           display_order: nextOrder,
         },
       });
 
+      const link = LinkMapper.toEntity(linkCreated);
+
       return [undefined, link];
     } catch (error) {
       const err = new Exception('Error creating link', 500);
-      return [err, {} as LinkEntity];
+      return [err, null];
     }
   }
 
@@ -96,7 +99,9 @@ export class LinksDataSourceImpl implements LinksDataSource {
         },
       });
 
-      return [undefined, links];
+      const linksMapped = links.map(link => LinkMapper.toEntity(link));
+
+      return [undefined, linksMapped];
     } catch (error) {
       const err = new Exception('Error getting links', 500);
       return [err, [] as LinkEntity[]];
@@ -120,7 +125,9 @@ export class LinksDataSourceImpl implements LinksDataSource {
         },
       });
 
-      return [undefined, links];
+      const linksMapped = links.map(link => LinkMapper.toEntity(link));
+
+      return [undefined, linksMapped];
     } catch (error) {
       const err = new Exception('Error getting links', 500);
       return [err, [] as LinkEntity[]];
@@ -143,10 +150,12 @@ export class LinksDataSourceImpl implements LinksDataSource {
         return [new NotFoundException('Link not found'), null];
       }
 
-      return [undefined, link];
+      const linkMapped = LinkMapper.toEntity(link);
+
+      return [undefined, linkMapped];
     } catch (error) {
       const err = new Exception('Error getting link', 500);
-      return [err, {} as LinkEntity];
+      return [err, null];
     }
   }
 
@@ -158,7 +167,7 @@ export class LinksDataSourceImpl implements LinksDataSource {
       const [exception, link] = await this.getLinkById({ id, user_id });
 
       if (exception) {
-        return [exception, {} as LinkEntity];
+        return [exception, null];
       }
 
       if (url && platform) {
@@ -189,7 +198,9 @@ export class LinksDataSourceImpl implements LinksDataSource {
         },
       });
 
-      return [undefined, updatedLink];
+      const updatedLinkMapped = LinkMapper.toEntity(updatedLink);
+
+      return [undefined, updatedLinkMapped];
     } catch (error) {
       const err = new Exception('Error updating link', 500);
       return [err, null];

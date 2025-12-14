@@ -1,7 +1,7 @@
 import { AuthDatasourceImpl } from '../../../src/infraestructure/datasources/auth.datasource.impl';
 import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { PasswordHasher } from '@/domain/interfaces';
-import { prismaMock } from '../../setup';
+import { prismaMock } from '../../setup-unit';
 import { BcryptPasswordHasherAdapter } from '@/infraestructure/adapters';
 import { mockUser } from '../../__mocks__';
 import { validRegisterPayload } from '../../payloads';
@@ -23,7 +23,7 @@ describe('AuthDatasource Integration Tests', () => {
       const [err, result] = await authDatasource.register(validRegisterPayload);
 
       expect(err).toBeInstanceOf(Error);
-      expect(result).toBeEmpty();
+      expect(result).toBeNull();
 
       expect(prismaMock.user.create).toHaveBeenCalledTimes(1);
     });
@@ -40,7 +40,7 @@ describe('AuthDatasource Integration Tests', () => {
       const [err, result] = await authDatasource.register(validRegisterPayload);
 
       expect(err).toBeInstanceOf(Error);
-      expect(result).toBeEmpty();
+      expect(result).toBeNull();
 
       expect(prismaMock.user.create).toHaveBeenCalledTimes(1);
     });
@@ -68,7 +68,7 @@ describe('AuthDatasource Integration Tests', () => {
         await authDatasource.findUserByEmail('test@test.com');
 
       expect(err).toBeInstanceOf(Error);
-      expect(result).toBeEmpty();
+      expect(result).toBeNull();
 
       expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
     });
@@ -81,7 +81,7 @@ describe('AuthDatasource Integration Tests', () => {
         await authDatasource.findUserByEmail('test@test.com');
 
       expect(err).toBeInstanceOf(Error);
-      expect(result).toBeEmpty();
+      expect(result).toBeNull();
 
       expect(prismaMock.user.findUnique).toHaveBeenCalledTimes(1);
     });

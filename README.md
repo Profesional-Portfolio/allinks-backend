@@ -1512,3 +1512,52 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Made with ❤️ by [deivid182](https://github.com/deivid182)
 
 </div>
+
+Aún no se aplican todos los tests correspondientes. Sin embargo, analiza el siguiente arbol de archivos y analiza si la estructura es correcta para cada tipo de test (unit, integration y e2e) y también determina que otros archivos test hacen falta asi como si es necesario mover tests que se encuentran en una carpeta a otra que resulte mas pertinente
+
+.
+├── context.ts
+├── e2e
+│ ├── auth.e2e.test.ts
+│ └── links.e2e.test.ts
+├── integration
+│ ├── datasources
+│ │ ├── auth.datasource.impl.test.ts
+│ │ └── links.repository.impl.test.ts
+│ └── repositories
+│ ├── auth.repository.impl.test.ts
+│ └── links.repository.impl.test.ts
+├── **mocks**
+│ ├── index.ts
+│ └── user.mock.ts
+├── payloads
+│ ├── auth
+│ │ ├── forgot-password.payload.ts
+│ │ ├── index.ts
+│ │ ├── login.payload.ts
+│ │ └── register.payload.ts
+│ ├── index.ts
+│ └── links
+│ ├── create-link.payload.ts
+│ ├── index.ts
+│ ├── reorder-links.payload.ts
+│ └── update-link.payload.ts
+├── setup.ts
+├── singleton.ts
+└── unit
+├── adapters
+│ ├── bcrypt-password-hasher.adapter.test.ts
+│ └── jwt-token-provider.adapter.test.ts
+├── middlewares
+│ ├── auth.middleware.test.ts
+│ ├── authorize-bulk-links.middleware.test.ts
+│ ├── authorize-link-owner.middleware.test.ts
+│ └── validate.middleware.test.ts
+└── use-cases
+├── auth
+│ ├── forgot-password.use-case.test.ts
+│ ├── login-user.use-case.test.ts
+│ └── register-user.use-case.test.ts
+└── links
+├── create-link.use-case.test.ts
+└── update-link.use-case.test.ts

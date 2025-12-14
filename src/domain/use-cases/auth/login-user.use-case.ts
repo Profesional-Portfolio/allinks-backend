@@ -22,11 +22,11 @@ export class LoginUserUseCase {
 
   async execute(
     dto: LoginUserDto
-  ): Promise<[Exception | undefined, LoginUserResponse]> {
+  ): Promise<[Exception | undefined, LoginUserResponse | null]> {
     const [error, user] = await this.authRepository.login(dto);
 
     if (error || !user) {
-      return [error, {} as LoginUserResponse];
+      return [error, null];
     }
 
     const [err, tokens] = await this.tokenProvider.generateTokenPair({
@@ -35,7 +35,7 @@ export class LoginUserUseCase {
     });
 
     if (err) {
-      return [err, {} as LoginUserResponse];
+      return [err, null];
     }
 
     return [

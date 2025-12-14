@@ -3,10 +3,9 @@
   "compilerOptions": {
     "module": "esnext",
     "moduleResolution": "node",
-    "target": "es2023",
+    "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
-    "ignoreDeprecations": "6.0",
     "allowJs": true,
     "strictPropertyInitialization": false,
     "paths": {
