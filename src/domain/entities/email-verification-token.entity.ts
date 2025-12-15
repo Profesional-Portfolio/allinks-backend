@@ -33,7 +33,7 @@ export class EmailVerificationTokenEntity {
   public static fromObject(object: {
     [key: string]: any;
   }): EmailVerificationTokenEntity {
-    const { id, user_id, token, expires_at, used, created_at } = object;
+    const { id, user_id, token, expires_at, verified_at, created_at } = object;
 
     if (!id) throw new Error('id is required');
     if (!user_id) throw new Error('userId is required');
@@ -45,7 +45,7 @@ export class EmailVerificationTokenEntity {
       user_id,
       token,
       new Date(expires_at),
-      used ?? false,
+      verified_at && new Date(verified_at),
       created_at ? new Date(created_at) : new Date()
     );
   }

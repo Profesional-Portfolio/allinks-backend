@@ -3,6 +3,29 @@ import swaggerJSDoc from 'swagger-jsdoc';
 const options: swaggerJSDoc.Options = {
   swaggerDefinition: {
     openapi: '3.0.0',
+    components: {
+      securitySchemes: {
+        // auth controller set access and refresh token in cookies
+        cookieAccessToken: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'accessToken',
+        },
+        cookieRefreshToken: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'refreshToken',
+        },
+      },
+    },
+    security: [
+      {
+        cookieAccessToken: [],
+        cookieRefreshToken: [],
+      },
+    ],
     info: {
       title: 'AllLinks API documentation',
       description: 'API documentation for AllLinks',

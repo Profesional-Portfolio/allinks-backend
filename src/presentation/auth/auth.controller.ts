@@ -28,6 +28,7 @@ import {
   ValidateResetTokenUseCase,
 } from '@/domain/use-cases/auth';
 import { UploadImageUseCase } from '@/domain/index';
+import { ResponseFormatter } from '@/infraestructure/utils';
 
 export class AuthController {
   constructor(
@@ -49,15 +50,21 @@ export class AuthController {
     const [error, message] = await this.validateTokenUseCase.execute(token);
 
     if (error) {
-      return res.status(StatusCode.BAD_REQUEST).json({
-        error: {
-          code: error.statusCode,
+      return res.status(error.statusCode).json(
+        ResponseFormatter.error({
           message: error.message,
-        },
-      });
+          statusCode: error.statusCode,
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json({ message });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {},
+        message: message!,
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   resetPassword = async (req: Request, res: Response) => {
@@ -65,15 +72,21 @@ export class AuthController {
     const [error, message] = await this.resetPasswordUseCase.execute(data);
 
     if (error) {
-      return res.status(StatusCode.BAD_REQUEST).json({
-        error: {
-          code: error.statusCode,
+      return res.status(error.statusCode).json(
+        ResponseFormatter.error({
           message: error.message,
-        },
-      });
+          statusCode: error.statusCode,
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json({ message });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {},
+        message: message!,
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   forgotPassword = async (req: Request, res: Response) => {
@@ -82,17 +95,21 @@ export class AuthController {
     const [exception, message] = await this.forgotPasswordUseCase.execute(data);
 
     if (exception) {
-      return res.status(StatusCode.BAD_REQUEST).json({
-        error: {
-          code: exception.statusCode,
+      return res.status(exception.statusCode).json(
+        ResponseFormatter.error({
           message: exception.message,
-        },
-      });
+          statusCode: exception.statusCode,
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json({
-      message,
-    });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {},
+        message: message!,
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   resendVerificationEmail = async (req: Request, res: Response) => {
@@ -101,15 +118,21 @@ export class AuthController {
       await this.resendVerificationEmailUseCase.execute(data);
 
     if (error) {
-      return res.status(StatusCode.BAD_REQUEST).json({
-        error: {
-          code: error.statusCode,
+      return res.status(error.statusCode).json(
+        ResponseFormatter.error({
           message: error.message,
-        },
-      });
+          statusCode: error.statusCode,
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json(result);
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {},
+        message: 'Verification email sent successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   registerUser = async (req: Request, res: Response) => {
@@ -125,12 +148,12 @@ export class AuthController {
     const [error, result] = await this.registerUserUseCase.execute(data);
 
     if (error) {
-      return res.status(error.statusCode).json({
-        error: {
-          code: error.statusCode,
+      return res.status(error.statusCode).json(
+        ResponseFormatter.error({
           message: error.message,
-        },
-      });
+          statusCode: error.statusCode,
+        })
+      );
     }
 
     // Establecer cookies con los tokens
@@ -151,12 +174,15 @@ export class AuthController {
 
     await this.sendWelcomeEmailUseCase.execute(id, email, first_name);
 
-    // Devolver solo la información del usuario (sin tokens)
-    return res.status(StatusCode.CREATED).json({
-      data: {
-        user: result.user,
-      },
-    });
+    return res.status(StatusCode.CREATED).json(
+      ResponseFormatter.success({
+        data: {
+          user: result.user,
+        },
+        message: 'User registered successfully',
+        statusCode: StatusCode.CREATED,
+      })
+    );
   };
 
   loginUser = async (req: Request, res: Response) => {
@@ -165,18 +191,21 @@ export class AuthController {
     const [error, result] = await this.loginUserUseCase.execute(data);
 
     if (error) {
-      return res.status(error.statusCode).json({
-        error: {
-          code: error.statusCode,
+      return res.status(error.statusCode).json(
+        ResponseFormatter.error({
           message: error.message,
-        },
-      });
+          statusCode: error.statusCode,
+        })
+      );
     }
 
     if (!result) {
-      return res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
-        error: 'Login failed',
-      });
+      return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+        ResponseFormatter.error({
+          message: 'Login failed',
+          statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+        })
+      );
     }
 
     // Establecer cookies con los tokens
@@ -192,11 +221,15 @@ export class AuthController {
     );
 
     // Devolver solo la información del usuario (sin tokens)
-    return res.status(StatusCode.OK).json({
-      data: {
-        user: result.user,
-      },
-    });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {
+          user: result.user,
+        },
+        message: 'Login successful',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   refreshToken = async (req: Request, res: Response) => {
@@ -204,21 +237,24 @@ export class AuthController {
     const refreshToken = req.cookies[COOKIE_NAMES.REFRESH_TOKEN];
 
     if (!refreshToken) {
-      return res
-        .status(StatusCode.BAD_REQUEST)
-        .json({ error: 'Refresh token is required' });
+      return res.status(StatusCode.BAD_REQUEST).json(
+        ResponseFormatter.error({
+          message: 'Refresh token is required',
+          statusCode: StatusCode.BAD_REQUEST,
+        })
+      );
     }
 
     const [error, tokens] =
       await this.refreshTokenUseCase.execute(refreshToken);
 
     if (error) {
-      return res.status(error.statusCode).json({
-        error: {
-          code: error.statusCode,
+      return res.status(error.statusCode).json(
+        ResponseFormatter.error({
           message: error.message,
-        },
-      });
+          statusCode: error.statusCode,
+        })
+      );
     }
 
     // Actualizar cookies con los nuevos tokens
@@ -233,9 +269,15 @@ export class AuthController {
       refreshTokenCookieOptions
     );
 
-    return res.status(StatusCode.OK).json({
-      message: 'Tokens refreshed successfully',
-    });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {
+          tokens,
+        },
+        message: 'Tokens refreshed successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   logout = async (req: Request, res: Response) => {
@@ -243,18 +285,25 @@ export class AuthController {
     res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, clearCookieOptions);
     res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, clearCookieOptions);
 
-    return res.status(StatusCode.OK).json({
-      message: 'Logged out successfully',
-    });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {},
+        message: 'Logged out successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   verifyEmail = async (req: Request, res: Response) => {
     const token = req.query.token;
 
     if (!token) {
-      return res
-        .status(StatusCode.BAD_REQUEST)
-        .json({ error: 'Token is required' });
+      return res.status(StatusCode.BAD_REQUEST).json(
+        ResponseFormatter.error({
+          message: 'Token is required',
+          statusCode: StatusCode.BAD_REQUEST,
+        })
+      );
     }
 
     const validatedToken = validate(verifyEmailDto, { token });
@@ -263,20 +312,30 @@ export class AuthController {
       await this.verifyEmailUseCase.execute(validatedToken);
 
     if (exception) {
-      return res.status(StatusCode.BAD_REQUEST).json({
-        error: {
-          code: exception.statusCode,
+      return res.status(exception.statusCode).json(
+        ResponseFormatter.error({
           message: exception.message,
-        },
-      });
+          statusCode: exception.statusCode,
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json({
-      message,
-    });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {},
+        message: 'Email verified successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   getProfile = async (req: Request, res: Response) => {
-    return res.status(StatusCode.OK).json({ data: req.user });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: req.user,
+        message: 'Profile retrieved successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 }
