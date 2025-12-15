@@ -31,7 +31,7 @@ export class NodemailerEmailAdapter implements EmailService {
         text: options.text,
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      await this.transporter.sendMail(mailOptions);
 
       return true;
     } catch (error) {

@@ -1,10 +1,7 @@
 import { UserEntity } from '@/domain/entities';
 
 export class UserMapper {
-  static userEntityFromObject(
-    object: UserEntity,
-    excludePassword = false
-  ): UserEntity {
+  static toEntity(object: UserEntity, excludePassword = false): UserEntity {
     const user = new UserEntity(
       object.id,
       object.email,

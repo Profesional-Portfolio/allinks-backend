@@ -64,7 +64,7 @@ export class JwtTokenProviderAdapter implements TokenProvider {
       const decoded = jwt.verify(token, this.accessSecret) as TokenPayload;
       return Promise.resolve([undefined, decoded]);
     } catch (error) {
-      const err = new Exception('Invalid token', 500);
+      const err = new Exception('Invalid token', 401);
       return Promise.resolve([err, {} as TokenPayload]);
     }
   }
@@ -76,7 +76,7 @@ export class JwtTokenProviderAdapter implements TokenProvider {
       const decoded = jwt.verify(token, this.refreshSecret) as TokenPayload;
       return Promise.resolve([undefined, decoded]);
     } catch (error) {
-      const err = new Exception('Invalid token', 500);
+      const err = new Exception('Invalid token', 401);
       return Promise.resolve([err, {} as TokenPayload]);
     }
   }

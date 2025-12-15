@@ -67,7 +67,14 @@ const config: Config = {
   // globalTeardown: undefined,
 
   // A set of global variables that need to be available in all test environments
-  // globals: {},
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        module: 'esnext',
+        esModuleInterop: true,
+      },
+    },
+  },
 
   // The maximum amount of workers used to run your tests. Can be specified as % or a number. E.g. maxWorkers: 10% will use 10% of your CPU amount + 1 as the maximum worker number. maxWorkers: 2 will use a maximum of 2 workers.
   // maxWorkers: "50%",
@@ -99,6 +106,7 @@ const config: Config = {
     '^@/infraestructure/(.*)$': '<rootDir>/src/infraestructure/$1',
     '^@/presentation/(.*)$': '<rootDir>/src/presentation/$1',
     '^@/config/(.*)$': '<rootDir>/src/config/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -111,7 +119,8 @@ const config: Config = {
   // notifyMode: "failure-change",
 
   // A preset that is used as a base for Jest's configuration
-  preset: 'ts-jest',
+  preset: 'ts-jest/presets/default-esm',
+  extensionsToTreatAsEsm: ['.ts'],
 
   // Run tests from one or more projects
   // projects: undefined,
@@ -144,7 +153,7 @@ const config: Config = {
   // setupFiles: [],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  // setupFilesAfterEnv: ['<rootDir>/tests'],
   testTimeout: 10000, // 10 seconds
 
   // The number of seconds after which a test is considered as slow and reported as such in the results.
@@ -181,14 +190,20 @@ const config: Config = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: {
+          module: 'esnext',
+          esModuleInterop: true,
+        },
+      },
+    ],
   },
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
-  // transformIgnorePatterns: [
-  //   "/node_modules/",
-  //   "\\.pnp\\.[^\\/]+$"
-  // ],
+  transformIgnorePatterns: ['node_modules/(?!(.*\\.mjs$)|(@prisma/client))'],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,

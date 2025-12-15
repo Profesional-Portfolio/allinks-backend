@@ -125,7 +125,7 @@ export class AuthController {
     const [error, result] = await this.registerUserUseCase.execute(data);
 
     if (error) {
-      return res.status(StatusCode.BAD_REQUEST).json({
+      return res.status(error.statusCode).json({
         error: {
           code: error.statusCode,
           message: error.message,
@@ -165,11 +165,17 @@ export class AuthController {
     const [error, result] = await this.loginUserUseCase.execute(data);
 
     if (error) {
-      return res.status(StatusCode.UNAUTHORIZED).json({
+      return res.status(error.statusCode).json({
         error: {
           code: error.statusCode,
           message: error.message,
         },
+      });
+    }
+
+    if (!result) {
+      return res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
+        error: 'Login failed',
       });
     }
 
@@ -207,7 +213,7 @@ export class AuthController {
       await this.refreshTokenUseCase.execute(refreshToken);
 
     if (error) {
-      return res.status(StatusCode.UNAUTHORIZED).json({
+      return res.status(error.statusCode).json({
         error: {
           code: error.statusCode,
           message: error.message,

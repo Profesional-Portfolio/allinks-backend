@@ -37,7 +37,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
         return [err, null];
       }
 
-      const mappedUser = UserMapper.userEntityFromObject(user);
+      const mappedUser = UserMapper.toEntity(user);
       const { password_hash, ...userWithoutPassword } = mappedUser;
 
       return [undefined, userWithoutPassword];
@@ -62,7 +62,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
         return [err, null];
       }
 
-      const mappedUser = UserMapper.userEntityFromObject(user, true);
+      const mappedUser = UserMapper.toEntity(user, true);
 
       return [undefined, mappedUser];
     } catch (error) {
@@ -120,12 +120,11 @@ export class AuthDatasourceImpl implements AuthDatasource {
         },
       });
 
-      const mappedUser = UserMapper.userEntityFromObject(user);
+      const mappedUser = UserMapper.toEntity(user);
       const { password_hash, ...userWithoutPassword } = mappedUser;
 
       return [undefined, userWithoutPassword];
     } catch (error) {
-      // throw error;
       const err = new InternalServerErrorException();
       return [err, null];
     }
@@ -171,7 +170,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
         data: { last_login_at: new Date() },
       });
 
-      return [undefined, UserMapper.userEntityFromObject(user, true)];
+      return [undefined, UserMapper.toEntity(user, true)];
     } catch (error) {
       const err = new InternalServerErrorException();
       return [err, null];

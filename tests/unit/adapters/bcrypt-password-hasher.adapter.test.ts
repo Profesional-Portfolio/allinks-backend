@@ -1,4 +1,3 @@
-// tests/unit/adapters/bcrypt-password-hasher.adapter.test.ts
 import { BcryptPasswordHasherAdapter } from '../../../src/infraestructure/adapters/bcrypt-password-hasher.adapter';
 import * as bcrypt from 'bcrypt';
 

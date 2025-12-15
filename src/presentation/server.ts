@@ -25,7 +25,7 @@ export default class Server {
     this.routes = routes;
   }
 
-  async start() {
+  async init() {
     this.app.disable('x-powered-by');
     this.app.use(helmet());
     this.app.use(morgan('combined'));
@@ -59,14 +59,19 @@ export default class Server {
         const statusCode =
           exception.statusCode || StatusCode.INTERNAL_SERVER_ERROR;
         const message = exception.message || 'Internal server error';
-        return res.status(statusCode).json({ message });
+        return res
+          .status(statusCode)
+          .json({ error: { code: statusCode, message } });
       }
     );
 
     this.app.use((_, res) => {
       res.status(StatusCode.NOT_FOUND).json({ message: 'Not found' });
     });
+  }
 
+  async start() {
+    await this.init();
     this.app.listen(this.port, () => {
       console.log(`Server running on port ${this.port}`);
     });
