@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { TokenProvider } from '@/domain/interfaces';
-import { UnauthorizedException } from '@/domain/exceptions';
 import { COOKIE_NAMES } from '@/infraestructure/utils';
 import { StatusCode } from '@/domain/enums';
+import { ResponseFormatter } from '@/infraestructure/utils';
 
 // export interface AuthenticatedRequest extends Request {
 //   user?: {
@@ -29,24 +29,21 @@ export class AuthMiddleware {
       }
 
       if (!token) {
-        return res.status(StatusCode.UNAUTHORIZED).json({
-          error: {
-            code: StatusCode.UNAUTHORIZED,
+        return res.status(StatusCode.UNAUTHORIZED).json(
+          ResponseFormatter.error({
             message: 'No token provided',
-          },
-        });
+            statusCode: StatusCode.UNAUTHORIZED,
+          })
+        );
       }
 
       const [error, payload] =
         await this.tokenProvider.verifyAccessToken(token);
 
       if (error) {
-        return res.status(StatusCode.UNAUTHORIZED).json({
-          error: {
-            code: error.statusCode,
-            message: error.message,
-          },
-        });
+        return res
+          .status(StatusCode.UNAUTHORIZED)
+          .json(ResponseFormatter.error(error));
       }
 
       req.user = payload;

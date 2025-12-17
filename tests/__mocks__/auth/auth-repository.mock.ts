@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { PasswordHasher, TokenProvider } from '@/domain/interfaces';
 import { AuthRepository } from '@/domain/repositories';
 

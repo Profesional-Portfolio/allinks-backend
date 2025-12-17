@@ -9,6 +9,7 @@ import {
 import { validate } from '../middlewares';
 import { createLinkDto, reorderLinksDto, updateLinkDto } from '@/domain/dtos';
 import { StatusCode } from '@/domain/enums';
+import { ResponseFormatter } from '@/infraestructure/utils';
 
 export class LinksController {
   constructor(
@@ -30,15 +31,21 @@ export class LinksController {
 
     if (error) {
       const statusCode = error.statusCode || StatusCode.BAD_REQUEST;
-      return res.status(statusCode).json({
-        error: {
-          code: error.statusCode,
+      return res.status(statusCode).json(
+        ResponseFormatter.error({
+          statusCode,
           message: error.message,
-        },
-      });
+        })
+      );
     }
 
-    return res.status(StatusCode.CREATED).json(result);
+    return res.status(StatusCode.CREATED).json(
+      ResponseFormatter.success({
+        data: result,
+        message: 'Link created successfully',
+        statusCode: StatusCode.CREATED,
+      })
+    );
   };
 
   getLinks = async (req: Request, res: Response) => {
@@ -47,15 +54,21 @@ export class LinksController {
 
     if (error) {
       const statusCode = error.statusCode || StatusCode.BAD_REQUEST;
-      return res.status(statusCode).json({
-        error: {
-          code: error.statusCode,
+      return res.status(statusCode).json(
+        ResponseFormatter.error({
+          statusCode,
           message: error.message,
-        },
-      });
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json(result);
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: result,
+        message: 'Links retrieved successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   updateLink = async (req: Request, res: Response) => {
@@ -70,15 +83,21 @@ export class LinksController {
 
     if (error) {
       const statusCode = error.statusCode || StatusCode.BAD_REQUEST;
-      return res.status(statusCode).json({
-        error: {
-          code: error.statusCode,
+      return res.status(statusCode).json(
+        ResponseFormatter.error({
+          statusCode,
           message: error.message,
-        },
-      });
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json(result);
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: result,
+        message: 'Link updated successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   changeVisibility = async (req: Request, res: Response) => {
@@ -92,15 +111,21 @@ export class LinksController {
 
     if (error) {
       const statusCode = error.statusCode || StatusCode.BAD_REQUEST;
-      return res.status(statusCode).json({
-        error: {
-          code: error.statusCode,
+      return res.status(statusCode).json(
+        ResponseFormatter.error({
+          statusCode,
           message: error.message,
-        },
-      });
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json(result);
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: result,
+        message: 'Link visibility changed successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 
   reorderLinks = async (req: Request, res: Response) => {
@@ -114,14 +139,20 @@ export class LinksController {
 
     if (error) {
       const statusCode = error.statusCode || StatusCode.BAD_REQUEST;
-      return res.status(statusCode).json({
-        error: {
-          code: error.statusCode,
+      return res.status(statusCode).json(
+        ResponseFormatter.error({
+          statusCode,
           message: error.message,
-        },
-      });
+        })
+      );
     }
 
-    return res.status(StatusCode.OK).json({ result });
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: result,
+        message: 'Links reordered successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
   };
 }
