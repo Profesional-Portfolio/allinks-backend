@@ -95,7 +95,7 @@ export class EmailTemplates {
   static welcomeEmail(name: string, verificationLink: string): string {
     const content = `
       <div class="header">
-        <div class="logo">🔗 LinkShortener</div>
+        <div class="logo">🔗 AllLinks</div>
       </div>
       <div class="content">
         <h1>¡Bienvenido, ${name}!</h1>
@@ -113,7 +113,7 @@ export class EmailTemplates {
       </div>
       <div class="footer">
         <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
-        <p>&copy; ${new Date().getFullYear()} LinkShortener. Todos los derechos reservados.</p>
+        <p>&copy; ${new Date().getFullYear()} AllLinks. Todos los derechos reservados.</p>
       </div>
     `;
 
@@ -124,7 +124,7 @@ export class EmailTemplates {
     return `
       ¡Bienvenido, ${name}!
 
-      Gracias por registrarte en LinkShortener. Para verificar tu cuenta, visita el siguiente enlace:
+      Gracias por registrarte en AllLinks. Para verificar tu cuenta, visita el siguiente enlace:
 
       ${verificationLink}
 
@@ -133,14 +133,14 @@ export class EmailTemplates {
       Si no creaste esta cuenta, puedes ignorar este correo.
 
       ---
-      LinkShortener
+      AllLinks
     `.trim();
   }
 
   static forgotPasswordEmail(name: string, resetLink: string): string {
     const content = `
       <div class="header">
-        <div class="logo">🔗 LinkShortener</div>
+        <div class="logo">🔗 AllLinks</div>
       </div>
       <div class="content">
         <h1>Restablecer contraseña</h1>
@@ -159,7 +159,7 @@ export class EmailTemplates {
       </div>
       <div class="footer">
         <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
-        <p>&copy; ${new Date().getFullYear()} LinkShortener. Todos los derechos reservados.</p>
+        <p>&copy; ${new Date().getFullYear()} AllLinks. Todos los derechos reservados.</p>
       </div>
     `;
 
@@ -183,14 +183,14 @@ export class EmailTemplates {
       Si no solicitaste restablecer tu contraseña, puedes ignorar este correo.
 
       ---
-      LinkShortener
+      AllLinks
     `.trim();
   }
 
   static passwordResetConfirmationEmail(name: string): string {
     const content = `
       <div class="header">
-        <div class="logo">🔗 LinkShortener</div>
+        <div class="logo">🔗 AllLinks</div>
       </div>
       <div class="content">
         <h1>Contraseña actualizada</h1>
@@ -203,7 +203,7 @@ export class EmailTemplates {
       </div>
       <div class="footer">
         <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
-        <p>&copy; ${new Date().getFullYear()} LinkShortener. Todos los derechos reservados.</p>
+        <p>&copy; ${new Date().getFullYear()} AllLinks. Todos los derechos reservados.</p>
       </div>
     `;
 
@@ -223,14 +223,14 @@ export class EmailTemplates {
       Si no fuiste tú quien realizó este cambio, contacta inmediatamente a nuestro equipo de soporte.
 
       ---
-      LinkShortener
+      AllLinks
     `.trim();
   }
 
   static verificationCodeEmail(name: string, code: string): string {
     const content = `
       <div class="header">
-        <div class="logo">🔗 LinkShortener</div>
+        <div class="logo">🔗 AllLinks</div>
       </div>
       <div class="content">
         <h1>Tu código de verificación</h1>
@@ -244,7 +244,7 @@ export class EmailTemplates {
       </div>
       <div class="footer">
         <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
-        <p>&copy; ${new Date().getFullYear()} LinkShortener. Todos los derechos reservados.</p>
+        <p>&copy; ${new Date().getFullYear()} AllLinks. Todos los derechos reservados.</p>
       </div>
     `;
 
@@ -266,7 +266,7 @@ export class EmailTemplates {
       Si no solicitaste este código, puedes ignorar este correo.
 
       ---
-      LinkShortener
+      AllLinks
     `.trim();
   }
 }
