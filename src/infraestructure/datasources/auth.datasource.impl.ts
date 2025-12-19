@@ -37,10 +37,9 @@ export class AuthDatasourceImpl implements AuthDatasource {
         return [err, null];
       }
 
-      const mappedUser = UserMapper.toEntity(user);
-      const { password_hash, ...userWithoutPassword } = mappedUser;
+      const mappedUser = UserMapper.toEntity(user, true);
 
-      return [undefined, userWithoutPassword];
+      return [undefined, mappedUser];
     } catch (error) {
       const err = new InternalServerErrorException();
       return [err, null];
@@ -106,7 +105,6 @@ export class AuthDatasourceImpl implements AuthDatasource {
       });
 
       if (userExists) {
-        // throw new BadRequestException('User already exists');
         const err = new BadRequestException('User already exists');
         return [err, null];
       }
@@ -120,10 +118,9 @@ export class AuthDatasourceImpl implements AuthDatasource {
         },
       });
 
-      const mappedUser = UserMapper.toEntity(user);
-      const { password_hash, ...userWithoutPassword } = mappedUser;
+      const mappedUser = UserMapper.toEntity(user, true);
 
-      return [undefined, userWithoutPassword];
+      return [undefined, mappedUser];
     } catch (error) {
       const err = new InternalServerErrorException();
       return [err, null];
@@ -222,6 +219,8 @@ export class AuthDatasourceImpl implements AuthDatasource {
           token,
         },
       });
+
+    console.log({ emailVerificationToken });
 
     return [
       undefined,

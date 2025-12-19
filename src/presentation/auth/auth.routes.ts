@@ -129,6 +129,33 @@ export class AuthRoutes {
      *           type: string
      *         last_login_at:
      *           type: string
+     *     UserWithoutPassword:
+     *       type: object
+     *       properties:
+     *         id:
+     *           type: string
+     *         email:
+     *           type: string
+     *         username:
+     *           type: string
+     *         first_name:
+     *           type: string
+     *         last_name:
+     *           type: string
+     *         bio:
+     *           type: string
+     *         avatar_url:
+     *           type: string
+     *         is_active:
+     *           type: boolean
+     *         email_verified:
+     *           type: boolean
+     *         created_at:
+     *           type: string
+     *         updated_at:
+     *           type: string
+     *         last_login_at:
+     *           type: string
      *     TokenPair:
      *       type: object
      *       properties:
@@ -148,18 +175,25 @@ export class AuthRoutes {
      *       properties:
      *         email:
      *           type: string
+     *           example: "user@example.com"
      *         password:
      *           type: string
+     *           example: "Password123!"
      *         username:
      *           type: string
+     *           example: "usertest"
      *         first_name:
      *           type: string
+     *           example: "John"
      *         last_name:
      *           type: string
+     *           example: "Doe"
      *         bio:
      *           type: string
+     *           example: "This is a bio"
      *         avatar_url:
      *           type: string
+     *           example: "https://example.com/avatar.jpg"
      *         is_active:
      *           type: boolean
      *         email_verified:
@@ -171,7 +205,122 @@ export class AuthRoutes {
      *           type: string
      *         password:
      *           type: string
+     *     ResetPasswordDto:
+     *       type: object
+     *       properties:
+     *         password:
+     *           type: string
+     *         password_confirmation:
+     *           type: string
+     *     ForgotPasswordDto:
+     *       type: object
+     *       properties:
+     *         email:
+     *           type: string
+     *     ResendVerificationEmailDto:
+     *       type: object
+     *       properties:
+     *         email:
+     *           type: string
+     *     VerifyEmailDto:
+     *       type: object
+     *       properties:
+     *         token:
+     *           type: string
+     *     RefreshTokenDto:
+     *       type: object
+     *       properties:
+     *         refreshToken:
+     *           type: string
+     *     ValidateTokenDto:
+     *       type: object
+     *       properties:
+     *         token:
+     *           type: string
+     *     BaseResponse:
+     *       type: object
+     *       properties:
+     *         status:
+     *           type: string
+     *         message:
+     *           type: string
+     *         statusCode:
+     *           type: number
+     *         timestamp:
+     *           type: string
+     *           format: date-time
+     *         meta:
+     *           type: object
+     *     AuthResponse:
+     *       allOf:
+     *         - $ref: '#/components/schemas/BaseResponse'
+     *         - type: object
+     *           properties:
+     *             data:
+     *               type: object
+     *               properties:
+     *                 user:
+     *                   $ref: '#/components/schemas/UserWithoutPassword'
      *
+     *     RefreshTokenResponse:
+     *       allOf:
+     *         - $ref: '#/components/schemas/BaseResponse'
+     *         - type: object
+     *           properties:
+     *             data:
+     *               type: object
+     *               properties:
+     *                 tokens:
+     *                   $ref: '#/components/schemas/TokenPair'
+     *
+     *     ResendVerificationResponse:
+     *       allOf:
+     *         - $ref: '#/components/schemas/BaseResponse'
+     *         - type: object
+     *           properties:
+     *             data:
+     *               type: object
+     *
+     *     VerifyEmailResponse:
+     *       allOf:
+     *         - $ref: '#/components/schemas/BaseResponse'
+     *         - type: object
+     *           properties:
+     *             data:
+     *               type: object
+     */
+
+    /**
+     * @swagger
+     * /api/auth/register:
+     *   post:
+     *     summary: Register a new user
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/RegisterUserDto'
+     *     responses:
+     *       201:
+     *         description: User registered successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/AuthResponse'
+     *       400:
+     *         description: Bad request
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       409:
+     *         description: User already exists
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
      */
 
     router.post(
@@ -179,15 +328,279 @@ export class AuthRoutes {
       upload.single('avatar_url'),
       controller.registerUser
     );
+
+    /**
+     * @swagger
+     * /api/auth/login:
+     *   post:
+     *     summary: Login a user
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/LoginUserDto'
+     *     security:
+     *       - cookieAccessToken: []
+     *       - cookieRefreshToken: []
+     *     responses:
+     *       200:
+     *         description: User logged in successfully
+     *         headers:
+     *           Set-Cookie:
+     *             description: >
+     *               Sets the access and refresh tokens.
+     *               Note: Multiple Set-Cookie headers are sent (accessToken and refreshToken).
+     *             schema:
+     *               type: string
+     *               example: "accessToken=...; Path=/; HttpOnly; Secure; SameSite=Lax, refreshToken=...; Path=/; HttpOnly; Secure; SameSite=Lax"
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/AuthResponse'
+     *       400:
+     *         description: Bad request
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       401:
+     *         description: Invalid credentials
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
+
     router.post('/login', controller.loginUser);
+
+    /**
+     * @swagger
+     * /api/auth/refresh:
+     *   post:
+     *     summary: Refresh a user's access token
+     *     tags: [Auth]
+     *     responses:
+     *       200:
+     *         description: User logged in successfully
+     *         headers:
+     *           Set-Cookie:
+     *             description: >
+     *               Sets the access and refresh tokens.
+     *               Note: Multiple Set-Cookie headers are sent.
+     *             schema:
+     *               type: string
+     *               example: "accessToken=...; Path=/; HttpOnly; Secure; SameSite=Lax, refreshToken=...; Path=/; HttpOnly; Secure; SameSite=Lax"
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/RefreshTokenResponse'
+     *       400:
+     *         description: Bad request
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       401:
+     *         description: Invalid credentials
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
+
     router.post('/refresh', controller.refreshToken);
+
+    /**
+     * @swagger
+     * /api/auth/logout:
+     *   post:
+     *     summary: Logout a user
+     *     tags: [Auth]
+     *     security:
+     *       - cookieAccessToken: []
+     *       - cookieRefreshToken: []
+     *     responses:
+     *       200:
+     *         description: User logged out successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       401:
+     *         description: Invalid credentials
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
     router.post('/logout', authMiddleware.authenticate, controller.logout);
+
+    /**
+     * @swagger
+     * /api/auth/profile:
+     *   get:
+     *     summary: Get user profile
+     *     tags: [Auth]
+     *     security:
+     *       - cookieAccessToken: []
+     *       - cookieRefreshToken: []
+     *     responses:
+     *       200:
+     *         description: User profile retrieved successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       401:
+     *         description: Invalid credentials
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
     router.get('/profile', authMiddleware.authenticate, controller.getProfile);
 
+    /**
+     * @swagger
+     * /api/auth/verify-email:
+     *   post:
+     *     summary: Verify user email
+     *     tags: [Auth]
+     *     parameters:
+     *       - in: query
+     *         name: token
+     *         required: true
+     *         schema:
+     *           type: string
+     *           example: "faa96266dc3df2c68e150d510d2f683610da98a668a7281382fb675f3eefce54"
+     *     responses:
+     *       200:
+     *         description: User email verified successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       401:
+     *         description: Invalid token
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
     router.post('/verify-email', controller.verifyEmail);
+
+    /**
+     * @swagger
+     * /api/auth/resend-verification:
+     *   post:
+     *     summary: Resend verification email
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ResendVerificationEmailDto'
+     *     responses:
+     *       200:
+     *         description: Verification email sent successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       401:
+     *         description: Invalid credentials
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
     router.post('/resend-verification', controller.resendVerificationEmail);
+
+    /**
+     * @swagger
+     *   /api/auth/forgot-password:
+     *   post:
+     *     summary: Forgot password
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ForgotPasswordDto'
+     *     responses:
+     *       200:
+     *         description: Password reset email sent successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       401:
+     *         description: Invalid credentials
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
     router.post('/forgot-password', controller.forgotPassword);
+
+    /**
+     * @swagger
+     *   /api/auth/reset-password:
+     *   post:
+     *     summary: Reset password
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ResetPasswordDto'
+     *     responses:
+     *       200:
+     *         description: Password reset successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       401:
+     *         description: Invalid credentials
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
     router.post('/reset-password', controller.resetPassword);
+
+    /**
+     * @swagger
+     *   /api/auth/validate-token:
+     *   post:
+     *     summary: Validate reset password token
+     *     tags: [Auth]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/ValidateTokenDto'
+     *     responses:
+     *       200:
+     *         description: Token is valid
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     *       400:
+     *         description: Invalid token
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/BaseResponse'
+     */
     router.post('/validate-token', controller.validateToken);
 
     return router;

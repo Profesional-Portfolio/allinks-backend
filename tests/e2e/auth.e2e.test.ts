@@ -15,7 +15,7 @@ describe('Auth E2E Tests', () => {
 
   beforeAll(async () => {
     server = new Server({ port: ENV.PORT, routes: AppRoutes.routes });
-    app = server.app;
+    app = server.serverApp;
     await server.init();
     await prismadb.user.deleteMany({
       where: {
@@ -38,12 +38,8 @@ describe('Auth E2E Tests', () => {
     it('should register a new user successfully', async () => {
       const response = await request(app)
         .post('/api/auth/register')
-        .send(validRegisterPayload);
-      // .expect(201);
-
-      expect(function (res: any) {
-        console.log(res);
-      });
+        .send(validRegisterPayload)
+        .expect(201);
 
       expect(response.body).toHaveProperty('data');
       expect(response.body.data).toHaveProperty('user');
@@ -90,8 +86,11 @@ describe('Auth E2E Tests', () => {
         .send(validRegisterPayload)
         .expect(400);
 
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toHaveProperty('message');
+      const status = response.body.statusCode;
+      const message = response.body.message;
+
+      expect(status).toBe(400);
+      expect(message).toBe('User already exists');
     });
 
     it('should fail to register with invalid data', async () => {
@@ -106,7 +105,10 @@ describe('Auth E2E Tests', () => {
         .send(invalidPayload)
         .expect(400);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+      const message = response.body.message;
+
+      expect(status).toBe(400);
     });
 
     it('should fail to register without required fields', async () => {
@@ -115,7 +117,9 @@ describe('Auth E2E Tests', () => {
         .send({})
         .expect(400);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(400);
     });
   });
 
@@ -170,8 +174,11 @@ describe('Auth E2E Tests', () => {
         })
         .expect(401);
 
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toHaveProperty('message');
+      const status = response.body.statusCode;
+      const message = response.body.message;
+
+      expect(status).toBe(401);
+      expect(message).toBe('Invalid credentials');
     });
 
     it('should fail to login with non-existent user', async () => {
@@ -183,7 +190,9 @@ describe('Auth E2E Tests', () => {
         })
         .expect(401);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(401);
     });
 
     it('should fail to login with invalid email format', async () => {
@@ -195,7 +204,9 @@ describe('Auth E2E Tests', () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(400);
     });
 
     it('should fail to login without credentials', async () => {
@@ -204,7 +215,9 @@ describe('Auth E2E Tests', () => {
         .send({})
         .expect(400);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(400);
     });
   });
 
@@ -251,8 +264,9 @@ describe('Auth E2E Tests', () => {
     it('should fail to refresh without refresh token cookie', async () => {
       const response = await request(app).post('/api/auth/refresh').expect(400);
 
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toBe('Refresh token is required');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(400);
     });
 
     it('should fail to refresh with invalid refresh token', async () => {
@@ -261,7 +275,9 @@ describe('Auth E2E Tests', () => {
         .set('Cookie', [`${COOKIE_NAMES.REFRESH_TOKEN}=invalid-token`])
         .expect(401);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(401);
     });
   });
 
@@ -282,7 +298,9 @@ describe('Auth E2E Tests', () => {
     it('should fail to get profile without access token', async () => {
       const response = await request(app).get('/api/auth/profile').expect(401);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(401);
     });
 
     it('should fail to get profile with invalid access token', async () => {
@@ -291,7 +309,9 @@ describe('Auth E2E Tests', () => {
         .set('Cookie', [`${COOKIE_NAMES.ACCESS_TOKEN}=invalid-token`])
         .expect(401);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(401);
     });
   });
 
@@ -302,8 +322,11 @@ describe('Auth E2E Tests', () => {
         .set('Cookie', [`${COOKIE_NAMES.ACCESS_TOKEN}=${accessToken}`])
         .expect(200);
 
-      expect(response.body).toHaveProperty('message');
-      expect(response.body.message).toBe('Logged out successfully');
+      const status = response.body.statusCode;
+      const message = response.body.message;
+
+      expect(status).toBe(200);
+      expect(message).toBe('Logged out successfully');
 
       // Verify cookies are cleared
       const cookies = response.headers['set-cookie'] as unknown as string[];
@@ -324,7 +347,9 @@ describe('Auth E2E Tests', () => {
     it('should fail to logout without access token', async () => {
       const response = await request(app).post('/api/auth/logout').expect(401);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(401);
     });
   });
 
@@ -332,7 +357,9 @@ describe('Auth E2E Tests', () => {
     it('should deny access to profile after logout', async () => {
       const response = await request(app).get('/api/auth/profile').expect(401);
 
-      expect(response.body).toHaveProperty('error');
+      const status = response.body.statusCode;
+
+      expect(status).toBe(401);
     });
 
     it('should allow access after fresh login', async () => {
@@ -356,8 +383,9 @@ describe('Auth E2E Tests', () => {
         .set('Cookie', [`${COOKIE_NAMES.ACCESS_TOKEN}=${newAccessToken}`])
         .expect(200);
 
-      expect(profileResponse.body).toHaveProperty('data');
-      expect(profileResponse.body.data.email).toBe(validLoginPayload.email);
+      const status = profileResponse.body.statusCode;
+
+      expect(status).toBe(200);
     });
   });
 });

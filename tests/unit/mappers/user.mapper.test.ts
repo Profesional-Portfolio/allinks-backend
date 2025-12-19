@@ -36,7 +36,7 @@ describe('UserMapper', () => {
         mockUserData.last_login_at
       );
 
-      const result = UserMapper.toEntity(userEntity);
+      const result = UserMapper.toEntity(userEntity) as UserEntity;
 
       expect(result).toBeInstanceOf(UserEntity);
       expect(result.id).toBe(mockUserData.id);
@@ -71,7 +71,7 @@ describe('UserMapper', () => {
         mockUserData.last_login_at
       );
 
-      const result = UserMapper.toEntity(userEntity, false);
+      const result = UserMapper.toEntity(userEntity, false) as UserEntity;
 
       expect(result.password_hash).toBe(mockUserData.password_hash);
     });
@@ -93,9 +93,9 @@ describe('UserMapper', () => {
         mockUserData.last_login_at
       );
 
-      const result = UserMapper.toEntity(userEntity, true);
+      const result = UserMapper.toEntity(userEntity, true) as UserEntity;
 
-      expect(result.password_hash).toBe('');
+      expect(result.password_hash).toBeUndefined();
       expect(result.id).toBe(mockUserData.id);
       expect(result.email).toBe(mockUserData.email);
       expect(result.username).toBe(mockUserData.username);
@@ -145,12 +145,15 @@ describe('UserMapper', () => {
         null
       );
 
-      const result = UserMapper.toEntity(userEntityWithNulls, true);
+      const result = UserMapper.toEntity(
+        userEntityWithNulls,
+        true
+      ) as UserEntity;
 
       expect(result.bio).toBeNull();
       expect(result.avatar_url).toBeNull();
       expect(result.last_login_at).toBeNull();
-      expect(result.password_hash).toBe('');
+      expect(result.password_hash).toBeUndefined();
     });
 
     it('should create a new UserEntity instance, not return the same reference', () => {

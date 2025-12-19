@@ -49,7 +49,7 @@ export class LinksRoutes {
       linksRepository
     );
 
-    router.get('/', authMiddleware.authenticate, controller.getLinks);
+    // router.get('/', controller.getLinks);
     router.post('/', authMiddleware.authenticate, controller.createLink);
     router.patch(
       '/visibility/:id',

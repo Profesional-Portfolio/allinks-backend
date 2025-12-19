@@ -7,6 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from '../config';
 import { StatusCode } from '@/domain/enums';
 import { Exception } from '@/domain/exceptions';
+import { ResponseFormatter } from '@/infraestructure/utils';
 
 interface ServerOptions {
   port: number;
@@ -35,7 +36,11 @@ export default class Server {
     this.app.use(express.urlencoded({ extended: true }));
 
     this.app.get('/', (_, res) => {
-      res.send('Hello world from the backend!!!!').status(StatusCode.OK);
+      res
+        .send(
+          '<h1 style="color: blue; font-size: 2rem; text-align: center;">Hello world from the backend!!!!</h1>'
+        )
+        .status(StatusCode.OK);
     });
 
     this.app.get('/health', (_, res) => {
@@ -61,13 +66,17 @@ export default class Server {
         const message = exception.message || 'Internal server error';
         return res
           .status(statusCode)
-          .json({ error: { code: statusCode, message } });
+          .json(ResponseFormatter.error({ statusCode, message }));
       }
     );
 
     this.app.use((_, res) => {
       res.status(StatusCode.NOT_FOUND).json({ message: 'Not found' });
     });
+  }
+
+  get serverApp() {
+    return this.app;
   }
 
   async start() {
