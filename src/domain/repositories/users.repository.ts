@@ -2,7 +2,7 @@ import { UpdateProfileUserDto } from '../dtos';
 import { LinkEntity, UserWithoutPassword } from '../entities';
 import { Exception } from '../exceptions';
 
-export abstract class UsersDatasource {
+export abstract class UsersRepository {
   abstract findUserWithLinksByUsername(
     username: string
   ): Promise<
