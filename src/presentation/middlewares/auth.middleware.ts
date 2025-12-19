@@ -4,14 +4,6 @@ import { COOKIE_NAMES } from '@/infraestructure/utils';
 import { StatusCode } from '@/domain/enums';
 import { ResponseFormatter } from '@/infraestructure/utils';
 
-// export interface AuthenticatedRequest extends Request {
-//   user?: {
-//     userId: string;
-//     email: string;
-//     [key: string]: unknown;
-//   };
-// }
-
 export class AuthMiddleware {
   constructor(private readonly tokenProvider: TokenProvider) {}
 
