@@ -10,7 +10,6 @@ const adapter = new PrismaPg({ connectionString });
 const prismadb =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: ['query'],
     adapter,
   });
 

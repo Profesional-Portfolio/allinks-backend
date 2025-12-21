@@ -16,7 +16,7 @@ COPY package.json *.yaml ./
 
 USER root
 
-RUN pnpm install
+RUN pnpm install --frozen-lockfile
 
 COPY . .
 
