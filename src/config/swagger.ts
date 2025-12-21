@@ -36,9 +36,26 @@ const options: swaggerJSDoc.Options = {
         name: 'Auth',
         description: 'Authentication endpoints',
       },
+      {
+        name: 'Links',
+        description: 'Links endpoints',
+      },
+      {
+        name: 'Profile',
+        description: 'Profile endpoints',
+      },
+      {
+        name: 'Public',
+        description: 'Public endpoints',
+      },
     ],
   },
-  apis: ['./src/presentation/auth/auth.routes.ts'],
+  apis: [
+    './src/presentation/auth/auth.routes.ts',
+    './src/presentation/links/links.routes.ts',
+    './src/presentation/profile/profile.routes.ts',
+    './src/presentation/public/public.routes.ts',
+  ],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);

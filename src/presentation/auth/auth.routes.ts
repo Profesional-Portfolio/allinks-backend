@@ -288,6 +288,96 @@ export class AuthRoutes {
      *           properties:
      *             data:
      *               type: object
+     *
+     *
+     *     UnauthorizedResponse:
+     *       type: object
+     *       properties:
+     *         status:
+     *           type: string
+     *         message:
+     *           type: string
+     *         statusCode:
+     *           type: number
+     *         timestamp:
+     *           type: string
+     *           format: date-time
+     *         meta:
+     *           type: object
+     *     NotFoundResponse:
+     *       type: object
+     *       properties:
+     *         status:
+     *           type: string
+     *         message:
+     *           type: string
+     *         statusCode:
+     *           type: number
+     *         timestamp:
+     *           type: string
+     *           format: date-time
+     *         meta:
+     *           type: object
+     *
+     *     ForbiddenResponse:
+     *       type: object
+     *       properties:
+     *         status:
+     *           type: string
+     *         message:
+     *           type: string
+     *         statusCode:
+     *           type: number
+     *         timestamp:
+     *           type: string
+     *           format: date-time
+     *         meta:
+     *           type: object
+     *
+     *     BadRequestResponse:
+     *       type: object
+     *       properties:
+     *         status:
+     *           type: string
+     *         message:
+     *           type: string
+     *         statusCode:
+     *           type: number
+     *         timestamp:
+     *           type: string
+     *           format: date-time
+     *         meta:
+     *           type: object
+     *
+     *     ConflictResponse:
+     *       type: object
+     *       properties:
+     *         status:
+     *           type: string
+     *         message:
+     *           type: string
+     *         statusCode:
+     *           type: number
+     *         timestamp:
+     *           type: string
+     *           format: date-time
+     *         meta:
+     *           type: object
+     *
+     *     InternalServerErrorResponse:
+     *       type: object
+     *       properties:
+     *         status:
+     *           type: string
+     *         message:
+     *           type: string
+     *         statusCode:
+     *           type: number
+     *         timestamp:
+     *           type: string
+     *           format: date-time
+     *         meta:
+     *           type: object
      */
 
     /**
