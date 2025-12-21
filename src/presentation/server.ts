@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction, Router } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
+import rateLimit, { Options as RateLimitOptions } from 'express-rate-limit';
 import cookies from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from '../config';
@@ -26,15 +27,35 @@ export default class Server {
     this.routes = routes;
   }
 
-  async init() {
+  private setupMiddlewares() {
     this.app.disable('x-powered-by');
+    const rateLimitOptions: Partial<RateLimitOptions> = {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      limit: 100,
+      handler: (req, res, next) => {
+        return res.status(StatusCode.TOO_MANY_REQUESTS).json(
+          ResponseFormatter.error({
+            statusCode: StatusCode.TOO_MANY_REQUESTS,
+            message: 'Too many requests from this IP, please try again later',
+          })
+        );
+      },
+    };
+
+    if (process.env.NODE_ENV === 'production') {
+      rateLimitOptions.limit = 5;
+    }
+
+    this.app.use(rateLimit(rateLimitOptions));
     this.app.use(helmet());
     this.app.use(morgan('combined'));
     this.app.use(cors());
     this.app.use(cookies());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+  }
 
+  private setupRoutes() {
     this.app.get('/', (_, res) => {
       res
         .send(
@@ -57,7 +78,9 @@ export default class Server {
 
     this.app.use(this.routes);
     this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  }
 
+  private setupErrorHandling() {
     this.app.use(
       (err: Error, _: Request, res: Response, next: NextFunction) => {
         const exception = err as Exception;
@@ -71,8 +94,19 @@ export default class Server {
     );
 
     this.app.use((_, res) => {
-      res.status(StatusCode.NOT_FOUND).json({ message: 'Not found' });
+      res.status(StatusCode.NOT_FOUND).json(
+        ResponseFormatter.error({
+          statusCode: StatusCode.NOT_FOUND,
+          message: 'Not found',
+        })
+      );
     });
+  }
+
+  public async init() {
+    this.setupMiddlewares();
+    this.setupRoutes();
+    this.setupErrorHandling();
   }
 
   get serverApp() {
@@ -81,6 +115,7 @@ export default class Server {
 
   async start() {
     await this.init();
+
     this.app.listen(this.port, () => {
       console.log(`Server running on port ${this.port}`);
     });
