@@ -9,6 +9,10 @@ import { swaggerSpec } from '../config';
 import { StatusCode } from '@/domain/enums';
 import { Exception } from '@/domain/exceptions';
 import { ResponseFormatter } from '@/infraestructure/utils';
+import {
+  doubleCsrfProtection,
+  generateCsrfToken,
+} from './middlewares/csrf.middleware';
 
 interface ServerOptions {
   port: number;
@@ -53,6 +57,7 @@ export default class Server {
     this.app.use(cookies());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(doubleCsrfProtection);
   }
 
   private setupRoutes() {
@@ -74,6 +79,11 @@ export default class Server {
 
     this.app.get('/api', (_, res) => {
       res.status(StatusCode.OK).json({ message: 'API is running' });
+    });
+
+    this.app.get('/api/csrf-token', (req, res) => {
+      const csrfToken = generateCsrfToken(req, res);
+      res.status(StatusCode.OK).json({ csrfToken });
     });
 
     this.app.use(this.routes);

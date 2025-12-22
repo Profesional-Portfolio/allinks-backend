@@ -18,6 +18,11 @@
     },
     "types": ["jest", "node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*", "tests/**/*.test.ts"],
+  "include": [
+    "src/**/*.ts",
+    "scripts/**/*",
+    "tests/**/*",
+    "tests/**/*.test.ts"
+  ],
   "exclude": ["dist", "generated"]
 }

@@ -180,7 +180,7 @@ export class ProfileRoutes {
 
     router.patch(
       '/avatar',
-      [authMiddleware.authenticate, upload.single('avatar')],
+      [authMiddleware.authenticate, upload],
       controller.updateAvatar
     );
 
