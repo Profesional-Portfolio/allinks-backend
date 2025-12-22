@@ -413,11 +413,7 @@ export class AuthRoutes {
      *               $ref: '#/components/schemas/BaseResponse'
      */
 
-    router.post(
-      '/register',
-      upload.single('avatar_url'),
-      controller.registerUser
-    );
+    router.post('/register', upload, controller.registerUser);
 
     /**
      * @swagger
