@@ -1,4 +1,5 @@
 import { Exception, UserWithoutPassword, UsersRepository } from '../..';
+import { CacheService } from '@/infraestructure/services';
 
 interface IUpdateUserAvatarUseCase {
   execute(
@@ -8,7 +9,10 @@ interface IUpdateUserAvatarUseCase {
 }
 
 export class UpdateUserAvatarUseCase implements IUpdateUserAvatarUseCase {
-  constructor(private readonly userRepository: UsersRepository) {}
+  constructor(
+    private readonly userRepository: UsersRepository,
+    private readonly cacheService: CacheService
+  ) {}
 
   async execute(
     id: UserWithoutPassword['id'],
@@ -18,6 +22,10 @@ export class UpdateUserAvatarUseCase implements IUpdateUserAvatarUseCase {
       id,
       avatarUrl
     );
+
+    if (!error && user) {
+      await this.cacheService.invalidateProfile(user.id, user.username);
+    }
 
     if (error) {
       return [error, null];

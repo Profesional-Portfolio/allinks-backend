@@ -11,7 +11,11 @@ import { UsersRepositoryImpl } from '@/infraestructure/repositories';
 import { Router } from 'express';
 import { ProfileController } from './profile.controller';
 import { AuthMiddleware, upload } from '../middlewares';
-import { JwtTokenProviderAdapter } from '@/infraestructure/adapters';
+import {
+  JwtTokenProviderAdapter,
+  CacheRedisAdapter,
+} from '@/infraestructure/adapters';
+import { CacheService } from '@/infraestructure/services';
 
 export class ProfileRoutes {
   static get routes(): Router {
@@ -25,14 +29,27 @@ export class ProfileRoutes {
     const datasource = new UsersDatasourceImpl();
     // repositories
     const usersRepository = new UsersRepositoryImpl(datasource);
+
+    // Cache dependencies
+    const cacheAdapter = new CacheRedisAdapter();
+    const cacheService = new CacheService(cacheAdapter);
+
     // use cases
-    const getUserProfileUseCase = new GetProfileUseCase(usersRepository);
-    const updateProfileUseCase = new UpdateProfileUseCase(usersRepository);
+    const getUserProfileUseCase = new GetProfileUseCase(
+      usersRepository,
+      cacheService
+    );
+    const updateProfileUseCase = new UpdateProfileUseCase(
+      usersRepository,
+      cacheService
+    );
     const updateUserAvatarUseCase = new UpdateUserAvatarUseCase(
-      usersRepository
+      usersRepository,
+      cacheService
     );
     const deleteUserAvatarUseCase = new DeleteUserAvatarUseCase(
-      usersRepository
+      usersRepository,
+      cacheService
     );
     const uploadImageUseCase = new UploadImageUseCase(uploadFileService);
 

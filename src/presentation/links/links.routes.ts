@@ -14,8 +14,16 @@ import {
   AuthorizeBulkLinksMiddleware,
   AuthorizeLinkOwnerMiddleware,
 } from '../middlewares';
-import { JwtTokenProviderAdapter } from '@/infraestructure/adapters';
-import { LinksRepositoryImpl } from '@/infraestructure/repositories';
+import {
+  JwtTokenProviderAdapter,
+  CacheRedisAdapter,
+} from '@/infraestructure/adapters';
+import {
+  LinksRepositoryImpl,
+  UsersRepositoryImpl,
+} from '@/infraestructure/repositories';
+import { UsersDatasourceImpl } from '@/infraestructure/datasources/users.datasource.impl';
+import { CacheService } from '@/infraestructure/services';
 
 export class LinksRoutes {
   static get routes(): Router {
@@ -25,13 +33,36 @@ export class LinksRoutes {
     const linksRepository = new LinksRepositoryImpl(datasource);
     const tokenProvider = new JwtTokenProviderAdapter();
 
-    const getLinksUseCase = new GetLinksUseCase(linksRepository);
+    // Cache dependencies
+    const cacheAdapter = new CacheRedisAdapter();
+    const cacheService = new CacheService(cacheAdapter);
+
+    // Users repository for fetching username during link invalidation
+    // Assuming UsersDatasourceImpl and UsersRepositoryImpl exist
+    const usersDatasource = new UsersDatasourceImpl();
+    const usersRepository = new UsersRepositoryImpl(usersDatasource);
+
+    const getLinksUseCase = new GetLinksUseCase(linksRepository, cacheService);
     const changeVisibilityUseCase = new ChangeVisibilityUseCase(
-      linksRepository
+      linksRepository,
+      usersRepository,
+      cacheService
     );
-    const createLinkUseCase = new CreateLinkUseCase(linksRepository);
-    const updateLinkUseCase = new UpdateLinkUseCase(linksRepository);
-    const reorderLinksUseCase = new ReorderLinksUseCase(linksRepository);
+    const createLinkUseCase = new CreateLinkUseCase(
+      linksRepository,
+      usersRepository,
+      cacheService
+    );
+    const updateLinkUseCase = new UpdateLinkUseCase(
+      linksRepository,
+      usersRepository,
+      cacheService
+    );
+    const reorderLinksUseCase = new ReorderLinksUseCase(
+      linksRepository,
+      usersRepository,
+      cacheService
+    );
 
     const controller = new LinksController(
       getLinksUseCase,
