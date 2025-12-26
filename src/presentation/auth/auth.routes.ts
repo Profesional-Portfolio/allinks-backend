@@ -7,8 +7,14 @@ import {
   JwtTokenProviderAdapter,
   BcryptPasswordHasherAdapter,
   getEmailAdapter,
+  CacheRedisAdapter,
 } from '@/infraestructure/adapters';
-
+import { CacheService } from '@/infraestructure/services';
+import {
+  CacheRateLimitMiddleware,
+  AuthMiddleware,
+  upload,
+} from '../middlewares';
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
@@ -20,7 +26,6 @@ import {
   ResendVerificationEmailUseCase,
   ValidateResetTokenUseCase,
 } from '@/domain/use-cases/auth';
-import { AuthMiddleware, upload } from '../middlewares';
 import { UploadImageUseCase } from '@/domain/index';
 import { CloudinaryImageUploaderAdapter } from '@/infraestructure/adapters/cloudinary-image-uploader.adapter';
 
@@ -92,6 +97,13 @@ export class AuthRoutes {
       uploadImageUseCase
     );
     const authMiddleware = new AuthMiddleware(tokenProvider);
+
+    // Cache dependencies for Rate Limiting
+    const cacheAdapter = new CacheRedisAdapter();
+    const cacheService = new CacheService(cacheAdapter);
+
+    // Rate limiters (10 requests per hour for auth sensitive endpoints)
+    const rateLimit = new CacheRateLimitMiddleware(cacheService, 10, 'auth');
 
     // Routes
     const router = Router();
@@ -413,7 +425,11 @@ export class AuthRoutes {
      *               $ref: '#/components/schemas/BaseResponse'
      */
 
-    router.post('/register', upload, controller.registerUser);
+    router.post(
+      '/register',
+      [rateLimit.handle, upload],
+      controller.registerUser
+    );
 
     /**
      * @swagger
@@ -459,7 +475,7 @@ export class AuthRoutes {
      *               $ref: '#/components/schemas/BaseResponse'
      */
 
-    router.post('/login', controller.loginUser);
+    router.post('/login', rateLimit.handle, controller.loginUser);
 
     /**
      * @swagger
@@ -631,7 +647,11 @@ export class AuthRoutes {
      *             schema:
      *               $ref: '#/components/schemas/BaseResponse'
      */
-    router.post('/forgot-password', controller.forgotPassword);
+    router.post(
+      '/forgot-password',
+      rateLimit.handle,
+      controller.forgotPassword
+    );
 
     /**
      * @swagger

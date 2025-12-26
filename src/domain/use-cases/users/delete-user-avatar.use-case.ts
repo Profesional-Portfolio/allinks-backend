@@ -1,4 +1,5 @@
 import { Exception, UserWithoutPassword, UsersRepository } from '../..';
+import { CacheService } from '@/infraestructure/services';
 
 interface IDeleteUserAvatarUseCase {
   execute(
@@ -7,12 +8,19 @@ interface IDeleteUserAvatarUseCase {
 }
 
 export class DeleteUserAvatarUseCase implements IDeleteUserAvatarUseCase {
-  constructor(private readonly userRepository: UsersRepository) {}
+  constructor(
+    private readonly userRepository: UsersRepository,
+    private readonly cacheService: CacheService
+  ) {}
 
   async execute(
     id: UserWithoutPassword['id']
   ): Promise<[Exception | null, string | null]> {
-    const [error] = await this.userRepository.deleteAvatarUser(id);
+    const [error, user] = await this.userRepository.deleteAvatarUser(id);
+
+    if (!error && user) {
+      await this.cacheService.invalidateProfile(user.id, user.username);
+    }
 
     if (error) {
       return [error, null];

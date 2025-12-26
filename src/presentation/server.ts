@@ -2,10 +2,9 @@ import express, { Request, Response, NextFunction, Router } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
-import rateLimit, { Options as RateLimitOptions } from 'express-rate-limit';
 import cookies from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from '../config';
+import { swaggerSpec, cacheClient } from '../config';
 import { StatusCode } from '@/domain/enums';
 import { Exception } from '@/domain/exceptions';
 import { ResponseFormatter } from '@/infraestructure/utils';
@@ -33,24 +32,6 @@ export default class Server {
 
   private setupMiddlewares() {
     this.app.disable('x-powered-by');
-    const rateLimitOptions: Partial<RateLimitOptions> = {
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      limit: 100,
-      handler: (req, res, next) => {
-        return res.status(StatusCode.TOO_MANY_REQUESTS).json(
-          ResponseFormatter.error({
-            statusCode: StatusCode.TOO_MANY_REQUESTS,
-            message: 'Too many requests from this IP, please try again later',
-          })
-        );
-      },
-    };
-
-    if (process.env.NODE_ENV === 'production') {
-      rateLimitOptions.limit = 5;
-    }
-
-    this.app.use(rateLimit(rateLimitOptions));
     this.app.use(helmet());
     this.app.use(morgan('combined'));
     this.app.use(cors());
@@ -124,6 +105,15 @@ export default class Server {
   }
 
   async start() {
+    try {
+      if (!cacheClient.isOpen) {
+        await cacheClient.connect();
+        console.log('Redis client connected');
+      }
+    } catch (error) {
+      console.error('Error connecting to Redis:', error);
+    }
+
     await this.init();
 
     this.app.listen(this.port, () => {
