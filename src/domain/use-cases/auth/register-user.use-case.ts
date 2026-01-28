@@ -3,7 +3,7 @@ import { RegisterUserDto } from '../../dtos';
 import { TokenProvider, TokenPair } from '../../interfaces';
 import { Exception } from '@/domain/exceptions';
 import { UserWithoutPassword } from '@/domain/entities';
-import { SendWelcomeEmailUseCase } from './send-welcome-email.use-case';
+import { CacheService } from '@/infraestructure/services/cache.service';
 
 interface RegisterUserResponse {
   user: UserWithoutPassword;
@@ -13,7 +13,8 @@ interface RegisterUserResponse {
 export class RegisterUserUseCase {
   constructor(
     private readonly authRepository: AuthRepository,
-    private readonly tokenProvider: TokenProvider
+    private readonly tokenProvider: TokenProvider,
+    private readonly cacheService: CacheService
   ) {}
 
   async execute(
@@ -33,6 +34,9 @@ export class RegisterUserUseCase {
     if (err) {
       return [err, {} as RegisterUserResponse];
     }
+
+    // Almacenar el refresh token en Redis
+    await this.cacheService.setRefreshToken(user.id, tokens.refreshToken);
 
     return [
       undefined,

@@ -26,6 +26,7 @@ import {
   ForgotPasswordUseCase,
   ResendVerificationEmailUseCase,
   ValidateResetTokenUseCase,
+  LogoutUserUseCase,
 } from '@/domain/use-cases/auth';
 import { UploadImageUseCase } from '@/domain/index';
 import { ResponseFormatter } from '@/infraestructure/utils';
@@ -41,7 +42,8 @@ export class AuthController {
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
     private readonly resendVerificationEmailUseCase: ResendVerificationEmailUseCase,
     private readonly validateTokenUseCase: ValidateResetTokenUseCase,
-    private readonly uploadImageUseCase: UploadImageUseCase
+    private readonly uploadImageUseCase: UploadImageUseCase,
+    private readonly logoutUserUseCase: LogoutUserUseCase
   ) {}
 
   validateToken = async (req: Request, res: Response) => {
@@ -281,6 +283,12 @@ export class AuthController {
   };
 
   logout = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+
+    if (userId) {
+      await this.logoutUserUseCase.execute(userId);
+    }
+
     // Limpiar cookies
     res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, clearCookieOptions);
     res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, clearCookieOptions);

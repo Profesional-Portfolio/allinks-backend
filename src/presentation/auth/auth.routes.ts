@@ -25,6 +25,7 @@ import {
   ForgotPasswordUseCase,
   ResendVerificationEmailUseCase,
   ValidateResetTokenUseCase,
+  LogoutUserUseCase,
 } from '@/domain/use-cases/auth';
 import { UploadImageUseCase } from '@/domain/index';
 import { CloudinaryImageUploaderAdapter } from '@/infraestructure/adapters/cloudinary-image-uploader.adapter';
@@ -69,18 +70,29 @@ export class AuthRoutes {
       emailService
     );
 
-    const registerUserUseCase = new RegisterUserUseCase(
-      authRepository, // Use cases
+    // Cache dependencies
+    const cacheAdapter = new CacheRedisAdapter();
+    const cacheService = new CacheService(cacheAdapter);
 
-      tokenProvider
+    const logoutUserUseCase = new LogoutUserUseCase(cacheService);
+
+    const registerUserUseCase = new RegisterUserUseCase(
+      authRepository,
+      tokenProvider,
+      cacheService
     );
 
     const loginUserUseCase = new LoginUserUseCase(
       authRepository,
-      tokenProvider
+      tokenProvider,
+      cacheService
     );
 
-    const refreshTokenUseCase = new RefreshTokenUseCase(tokenProvider);
+    const refreshTokenUseCase = new RefreshTokenUseCase(
+      tokenProvider,
+      cacheService
+    );
+
     const uploadImageUseCase = new UploadImageUseCase(uploadFileService);
 
     // Controller & Middleware
@@ -94,13 +106,10 @@ export class AuthRoutes {
       forgotPasswordUseCase,
       resendVerificationEmailUseCase,
       validateResetTokenUseCase,
-      uploadImageUseCase
+      uploadImageUseCase,
+      logoutUserUseCase
     );
-    const authMiddleware = new AuthMiddleware(tokenProvider);
-
-    // Cache dependencies for Rate Limiting
-    const cacheAdapter = new CacheRedisAdapter();
-    const cacheService = new CacheService(cacheAdapter);
+    const authMiddleware = new AuthMiddleware(tokenProvider, cacheService);
 
     // Rate limiters (10 requests per hour for auth sensitive endpoints)
     const rateLimit = new CacheRateLimitMiddleware(cacheService, 10, 'auth');
