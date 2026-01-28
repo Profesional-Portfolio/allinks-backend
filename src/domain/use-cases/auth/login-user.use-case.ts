@@ -2,6 +2,7 @@ import { AuthRepository } from '../../repositories';
 import { LoginUserDto } from '../../dtos';
 import { TokenProvider, TokenPair } from '../../interfaces';
 import { Exception } from '@/domain/exceptions';
+import { CacheService } from '@/infraestructure/services/cache.service';
 
 interface LoginUserResponse {
   user: {
@@ -17,7 +18,8 @@ interface LoginUserResponse {
 export class LoginUserUseCase {
   constructor(
     private readonly authRepository: AuthRepository,
-    private readonly tokenProvider: TokenProvider
+    private readonly tokenProvider: TokenProvider,
+    private readonly cacheService: CacheService
   ) {}
 
   async execute(
@@ -37,6 +39,9 @@ export class LoginUserUseCase {
     if (err) {
       return [err, null];
     }
+
+    // Almacenar el refresh token en Redis
+    await this.cacheService.setRefreshToken(user.id, tokens.refreshToken);
 
     return [
       undefined,

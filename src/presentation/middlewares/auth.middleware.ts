@@ -3,9 +3,13 @@ import { TokenProvider } from '@/domain/interfaces';
 import { COOKIE_NAMES } from '@/infraestructure/utils';
 import { StatusCode } from '@/domain/enums';
 import { ResponseFormatter } from '@/infraestructure/utils';
+import { CacheService } from '@/infraestructure/services/cache.service';
 
 export class AuthMiddleware {
-  constructor(private readonly tokenProvider: TokenProvider) {}
+  constructor(
+    private readonly tokenProvider: TokenProvider,
+    private readonly cacheService: CacheService
+  ) {}
 
   authenticate = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -38,6 +42,18 @@ export class AuthMiddleware {
           .json(ResponseFormatter.error(error));
       }
 
+      // Verificar si la sesión (refresh token) existe en Redis
+      const hasSession = await this.cacheService.getRefreshToken(payload.id);
+
+      if (!hasSession) {
+        return res.status(StatusCode.UNAUTHORIZED).json(
+          ResponseFormatter.error({
+            message: 'Session expired or revoked',
+            statusCode: StatusCode.UNAUTHORIZED,
+          })
+        );
+      }
+
       req.user = payload;
 
       next();
@@ -67,10 +83,15 @@ export class AuthMiddleware {
         const [error, payload] =
           await this.tokenProvider.verifyAccessToken(token);
 
-        if (error) {
-          next();
+        if (!error) {
+          // Verificar si la sesión (refresh token) existe en Redis
+          const hasSession = await this.cacheService.getRefreshToken(
+            payload.id
+          );
+          if (hasSession) {
+            req.user = payload;
+          }
         }
-        req.user = payload;
       }
 
       next();

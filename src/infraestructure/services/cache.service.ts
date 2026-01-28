@@ -10,6 +10,7 @@ export class CacheService {
     LINKS: 10 * 60, // 10 minutes
     RATE_LIMIT: 60 * 60, // 1 hour
     PLATFORMS_CONFIG: 24 * 60 * 60, // 24 hours
+    REFRESH_TOKEN: 7 * 24 * 60 * 60, // 7 days
   };
 
   private readonly KEY_PATTERNS = {
@@ -19,6 +20,7 @@ export class CacheService {
     LINKS: (userId: string) => `links:user:${userId}`,
     RATE_LIMIT: (endpoint: string, id: string) => `ratelimit:${endpoint}:${id}`,
     PLATFORMS_CONFIG: 'platforms:config',
+    REFRESH_TOKEN: (userId: string) => `auth:refresh_token:${userId}`,
   };
 
   constructor(private readonly cacheAdapter: ICacheService) {}
@@ -45,6 +47,20 @@ export class CacheService {
   async getSession(userId: string): Promise<any | null> {
     const data = await this.cacheAdapter.get(this.KEY_PATTERNS.SESSION(userId));
     return data ? JSON.parse(data) : null;
+  }
+
+  // 1.1 Refresh Token Cache
+  async setRefreshToken(userId: string, token: string): Promise<void> {
+    const key = this.KEY_PATTERNS.REFRESH_TOKEN(userId);
+    await this.cacheAdapter.setWithTTL(key, token, this.TTL.REFRESH_TOKEN);
+  }
+
+  async getRefreshToken(userId: string): Promise<string | null> {
+    return await this.cacheAdapter.get(this.KEY_PATTERNS.REFRESH_TOKEN(userId));
+  }
+
+  async deleteRefreshToken(userId: string): Promise<void> {
+    await this.cacheAdapter.del(this.KEY_PATTERNS.REFRESH_TOKEN(userId));
   }
 
   // 2. Public Profile Cache

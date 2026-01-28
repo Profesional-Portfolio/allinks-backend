@@ -72,7 +72,7 @@ export class LinksRoutes {
       reorderLinksUseCase
     );
 
-    const authMiddleware = new AuthMiddleware(tokenProvider);
+    const authMiddleware = new AuthMiddleware(tokenProvider, cacheService);
     const authorizeLinkOwnerResource = new AuthorizeLinkOwnerMiddleware(
       linksRepository
     );

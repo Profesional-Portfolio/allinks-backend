@@ -20,19 +20,20 @@ import { CacheService } from '@/infraestructure/services';
 export class ProfileRoutes {
   static get routes(): Router {
     const router = Router();
-    // adapters
     const tokenProvider = new JwtTokenProviderAdapter();
     const uploadFileService = new CloudinaryImageUploaderAdapter();
-    // middleware
-    const authMiddleware = new AuthMiddleware(tokenProvider);
-    // datasources
-    const datasource = new UsersDatasourceImpl();
-    // repositories
-    const usersRepository = new UsersRepositoryImpl(datasource);
 
     // Cache dependencies
     const cacheAdapter = new CacheRedisAdapter();
     const cacheService = new CacheService(cacheAdapter);
+
+    // middleware
+    const authMiddleware = new AuthMiddleware(tokenProvider, cacheService);
+
+    // datasources
+    const datasource = new UsersDatasourceImpl();
+    // repositories
+    const usersRepository = new UsersRepositoryImpl(datasource);
 
     // use cases
     const getUserProfileUseCase = new GetProfileUseCase(

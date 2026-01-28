@@ -8,3 +8,4 @@ export * from './reset-password.use-case';
 export * from './validate-reset-token.use-case';
 export * from './send-welcome-email.use-case';
 export * from './validate-reset-token.use-case';
+export * from './logout-user.use-case';
