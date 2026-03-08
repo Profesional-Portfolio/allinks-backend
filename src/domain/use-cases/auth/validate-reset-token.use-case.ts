@@ -15,8 +15,10 @@ export class ValidateResetTokenUseCase implements IValidateResetTokenUseCase {
       await this.authRepository.findPasswordResetToken(token);
 
     if (!tokenEntity) {
-      return [exception, null];
+      const err = new BadRequestException('Invalid or expired reset token');
+      return [err, null];
     }
+
 
     if (tokenEntity.used_at) {
       const err = new BadRequestException(

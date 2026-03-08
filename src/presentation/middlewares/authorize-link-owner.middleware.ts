@@ -7,7 +7,7 @@ export class AuthorizeLinkOwnerMiddleware {
 
   authorize = async (req: Request, res: any, next: any) => {
     try {
-      const linkId = req.params.id;
+      const linkId = req.params.id as string;
       const userId = req.user?.id;
 
       if (!linkId) {

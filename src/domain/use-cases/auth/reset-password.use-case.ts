@@ -24,8 +24,15 @@ export class ResetPasswordUseCase implements IResetPasswordUseCase {
       await this.authRepository.findPasswordResetToken(resetPasswordDto.token);
 
     if (!tokenEntity) {
-      return [exceptionPassworkToken, null];
+      const err = new BadRequestException('Invalid or expired reset token');
+      return [err, null];
     }
+    
+    // Check if passwords match (usually handled by DTO but good for defense)
+    if (resetPasswordDto.password !== resetPasswordDto.password_confirmation) {
+      return [new BadRequestException("Passwords don't match"), null];
+    }
+
 
     if (!tokenEntity.isValid()) {
       if (tokenEntity.used_at) {

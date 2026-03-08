@@ -102,7 +102,7 @@ export class LinksController {
 
   changeVisibility = async (req: Request, res: Response) => {
     const user_id = req.user?.id as string;
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     const [error, result] = await this.changeVisibilityUseCase.execute({
       id,

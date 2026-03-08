@@ -122,6 +122,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
 
       return [undefined, mappedUser];
     } catch (error) {
+      console.log('Error registering user: ', error);
       const err = new InternalServerErrorException();
       return [err, null];
     }

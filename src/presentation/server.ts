@@ -74,6 +74,7 @@ export default class Server {
   private setupErrorHandling() {
     this.app.use(
       (err: Error, _: Request, res: Response, next: NextFunction) => {
+        console.error('Global Error Handler caught:', err);
         const exception = err as Exception;
         const statusCode =
           exception.statusCode || StatusCode.INTERNAL_SERVER_ERROR;
@@ -83,6 +84,7 @@ export default class Server {
           .json(ResponseFormatter.error({ statusCode, message }));
       }
     );
+
 
     this.app.use((_, res) => {
       res.status(StatusCode.NOT_FOUND).json(
@@ -95,16 +97,6 @@ export default class Server {
   }
 
   public async init() {
-    this.setupMiddlewares();
-    this.setupRoutes();
-    this.setupErrorHandling();
-  }
-
-  get serverApp() {
-    return this.app;
-  }
-
-  async start() {
     try {
       if (!cacheClient.isOpen) {
         await cacheClient.connect();
@@ -113,9 +105,16 @@ export default class Server {
     } catch (error) {
       console.error('Error connecting to Redis:', error);
     }
+    this.setupMiddlewares();
+    this.setupRoutes();
+    this.setupErrorHandling();
+  }
+  get serverApp() {
+    return this.app;
+  }
 
+  async start() {
     await this.init();
-
     this.app.listen(this.port, () => {
       console.log(`Server running on port ${this.port}`);
     });

@@ -4,9 +4,10 @@ import { ENV } from '@/config/index';
 const isProduction = ENV.NODE_ENV === 'production';
 
 export const COOKIE_NAMES = {
+  CSRF_TOKEN: 'x-csrf-token',
   ACCESS_TOKEN: 'accessToken',
   REFRESH_TOKEN: 'refreshToken',
-} as const;
+} as const; 
 
 // Configuración base para cookies
 const baseCookieOptions: CookieOptions = {
