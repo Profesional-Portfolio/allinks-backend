@@ -1,14 +1,11 @@
 import { NodemailerEmailAdapter } from '../../../src/infraestructure/adapters/nodemailer-email.adapter';
 import nodemailer, { Transporter } from 'nodemailer';
 import type { SendEmailOptions } from '@/domain/interfaces/';
+import { ENV } from '@/config/env';
 
 jest.mock('nodemailer');
-
-describe('NodemailerEmailAdapter', () => {
-  let emailAdapter: NodemailerEmailAdapter;
-  let mockTransporter: jest.Mocked<Transporter>;
-
-  const mockEnv = {
+jest.mock('@/config/env', () => ({
+  ENV: {
     SMTP_HOST: 'smtp.test.com',
     SMTP_PORT: '587',
     SMTP_SECURE: 'false',
@@ -16,18 +13,15 @@ describe('NodemailerEmailAdapter', () => {
     SMTP_PASSWORD: 'testpassword',
     SMTP_FROM_EMAIL: 'noreply@allinks.com',
     SMTP_FROM_NAME: 'Allinks',
-  };
+  },
+}));
+
+describe('NodemailerEmailAdapter', () => {
+  let emailAdapter: NodemailerEmailAdapter;
+  let mockTransporter: jest.Mocked<Transporter>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    process.env.SMTP_HOST = mockEnv.SMTP_HOST;
-    process.env.SMTP_PORT = mockEnv.SMTP_PORT;
-    process.env.SMTP_SECURE = mockEnv.SMTP_SECURE;
-    process.env.SMTP_USER = mockEnv.SMTP_USER;
-    process.env.SMTP_PASSWORD = mockEnv.SMTP_PASSWORD;
-    process.env.SMTP_FROM_EMAIL = mockEnv.SMTP_FROM_EMAIL;
-    process.env.SMTP_FROM_NAME = mockEnv.SMTP_FROM_NAME;
 
     mockTransporter = {
       sendMail: jest.fn(),
@@ -39,37 +33,25 @@ describe('NodemailerEmailAdapter', () => {
     emailAdapter = new NodemailerEmailAdapter();
   });
 
-  afterEach(() => {
-    delete process.env.SMTP_HOST;
-    delete process.env.SMTP_PORT;
-    delete process.env.SMTP_SECURE;
-    delete process.env.SMTP_USER;
-    delete process.env.SMTP_PASSWORD;
-    delete process.env.SMTP_FROM_EMAIL;
-    delete process.env.SMTP_FROM_NAME;
-  });
-
   describe('constructor', () => {
     it('should create transporter with correct configuration', () => {
       expect(nodemailer.createTransport).toHaveBeenCalledWith({
-        host: mockEnv.SMTP_HOST,
-        port: parseInt(mockEnv.SMTP_PORT, 10),
+        host: ENV.SMTP_HOST,
+        port: parseInt(ENV.SMTP_PORT, 10),
         secure: false,
         auth: {
-          user: mockEnv.SMTP_USER,
-          pass: mockEnv.SMTP_PASSWORD,
+          user: ENV.SMTP_USER,
+          pass: ENV.SMTP_PASSWORD,
         },
       });
     });
 
     it('should use default values when environment variables are not set', () => {
-      // Clear environment variables
-      delete process.env.SMTP_HOST;
-      delete process.env.SMTP_FROM_EMAIL;
-      delete process.env.SMTP_FROM_NAME;
+      // Temporarily change ENV for this test
+      const originalHost = ENV.SMTP_HOST;
+      (ENV as any).SMTP_HOST = undefined;
 
       jest.clearAllMocks();
-
       new NodemailerEmailAdapter();
 
       expect(nodemailer.createTransport).toHaveBeenCalledWith(
@@ -77,32 +59,40 @@ describe('NodemailerEmailAdapter', () => {
           host: 'smtp.gmail.com',
         })
       );
+
+      (ENV as any).SMTP_HOST = originalHost;
     });
 
     it('should set secure to true when SMTP_SECURE is "true"', () => {
-      process.env.SMTP_SECURE = 'true';
-      jest.clearAllMocks();
+      const originalSecure = ENV.SMTP_SECURE;
+      (ENV as any).SMTP_SECURE = 'true';
 
+      jest.clearAllMocks();
       new NodemailerEmailAdapter();
 
       expect(nodemailer.createTransport).toHaveBeenCalledWith(
         expect.objectContaining({
-          secure: false,
+          secure: true,
         })
       );
+
+      (ENV as any).SMTP_SECURE = originalSecure;
     });
 
     it('should parse SMTP_PORT correctly', () => {
-      process.env.SMTP_PORT = '465';
-      jest.clearAllMocks();
+      const originalPort = ENV.SMTP_PORT;
+      (ENV as any).SMTP_PORT = '465';
 
+      jest.clearAllMocks();
       new NodemailerEmailAdapter();
 
       expect(nodemailer.createTransport).toHaveBeenCalledWith(
         expect.objectContaining({
-          port: 2525,
+          port: 465,
         })
       );
+
+      (ENV as any).SMTP_PORT = originalPort;
     });
   });
 
@@ -122,7 +112,7 @@ describe('NodemailerEmailAdapter', () => {
       const result = await emailAdapter.sendEmail(mockEmailOptions);
 
       expect(mockTransporter.sendMail).toHaveBeenCalledWith({
-        from: `"${mockEnv.SMTP_FROM_NAME}" <${mockEnv.SMTP_FROM_EMAIL}>`,
+        from: `"${ENV.SMTP_FROM_NAME}" <${ENV.SMTP_FROM_EMAIL}>`,
         to: mockEmailOptions.to,
         subject: mockEmailOptions.subject,
         html: mockEmailOptions.html,
@@ -145,7 +135,7 @@ describe('NodemailerEmailAdapter', () => {
       const result = await emailAdapter.sendEmail(emailOptionsWithoutText);
 
       expect(mockTransporter.sendMail).toHaveBeenCalledWith({
-        from: `"${mockEnv.SMTP_FROM_NAME}" <${mockEnv.SMTP_FROM_EMAIL}>`,
+        from: `"${ENV.SMTP_FROM_NAME}" <${ENV.SMTP_FROM_EMAIL}>`,
         to: emailOptionsWithoutText.to,
         subject: emailOptionsWithoutText.subject,
         html: emailOptionsWithoutText.html,

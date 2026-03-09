@@ -3,6 +3,7 @@ import { RegisterUserDto } from '@/domain/dtos/auth/register-user.dto';
 import { Context, createMockContext, MockContext } from '../../../context';
 import {
   mockAuthRepository,
+  mockCacheService,
   mockPasswordHasher,
   mockTokenProvider,
   mockUser,
@@ -34,7 +35,8 @@ describe('RegisterUserUseCase', () => {
   beforeEach(() => {
     registerUserUseCase = new RegisterUserUseCase(
       mockAuthRepository,
-      mockTokenProvider
+      mockTokenProvider,
+      mockCacheService as any
     );
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;

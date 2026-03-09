@@ -3,6 +3,7 @@ import { Context, MockContext, createMockContext } from '../../../context';
 import { LoginUserUseCase } from '@/domain/index';
 import {
   mockAuthRepository,
+  mockCacheService,
   mockTokenProvider,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
@@ -25,7 +26,8 @@ describe('LoginUserUseCase', () => {
   beforeEach(() => {
     loginUserUseCase = new LoginUserUseCase(
       mockAuthRepository,
-      mockTokenProvider
+      mockTokenProvider,
+      mockCacheService as any
     );
     mockCtx = createMockContext();
     ctx = mockCtx as unknown as Context;
