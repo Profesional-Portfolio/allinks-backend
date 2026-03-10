@@ -25,11 +25,10 @@ import perfectionist from "eslint-plugin-perfectionist";
 /** @type {import('@typescript-eslint/utils').TSESLint.FlatConfig.ConfigFile} */
 export default [
 
-  ...[
-    eslint.configs.recommended,
-    ...tseslint.configs.strictTypeChecked,
-    ...tseslint.configs.stylisticTypeChecked
-  ].map((config) => ({ ...config, ignorePatterns: ["**/*.js"] })),
+  { ignores: ["**/*.js"] },
+  eslint.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
       parserOptions: {
