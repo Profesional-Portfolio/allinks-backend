@@ -5,22 +5,17 @@ import { TokenPayload } from '@/domain/interfaces';
 
 jest.mock('jsonwebtoken');
 
+import { ENV } from '@/config/env';
+
 let tokenProvider: JwtTokenProviderAdapter;
 tokenProvider = new JwtTokenProviderAdapter();
 describe('JwtTokenProviderAdapter', () => {
   const mockJwt = jwt as jest.Mocked<typeof jwt>;
-  const secretKey = 'xRtJMRFYvCxZWH/XlA4ft9MtPIQmrl6nS9V1F5L7Ehg=';
-  const refreshSecretKey = 'DEB3WojlhZyUIcHD5wvVGcpTKQgvT+QqDabBf7MUS18=';
+  const secretKey = ENV.JWT_ACCESS_SECRET;
+  const refreshSecretKey = ENV.JWT_REFRESH_SECRET;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.JWT_SECRET = secretKey;
-    process.env.JWT_REFRESH_SECRET = refreshSecretKey;
-  });
-
-  afterEach(() => {
-    delete process.env.JWT_SECRET;
-    delete process.env.JWT_REFRESH_SECRET;
   });
 
   describe('generateToken', () => {
