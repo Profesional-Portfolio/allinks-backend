@@ -2,11 +2,7 @@ name: Deploy Backend — ECR + ECS
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - "backend/**"
-      - ".github/workflows/deploy-backend.yml"
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -38,8 +34,8 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: "pnpm"
+          node-version: '22'
+          cache: 'pnpm'
           cache-dependency-path: backend/pnpm-lock.yaml
 
       - name: Install backend dependencies
