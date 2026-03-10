@@ -14,7 +14,6 @@ export class AuthorizeBulkLinksMiddleware {
       if (req.body.linkIds && Array.isArray(req.body.linkIds)) {
         linkIds = req.body.linkIds;
       } else if (req.body.links && Array.isArray(req.body.links)) {
-        console.log({ links: req.body.links });
         linkIds = req.body.links.map((link: any) =>
           typeof link === 'string' ? link : link.id
         );
@@ -32,7 +31,6 @@ export class AuthorizeBulkLinksMiddleware {
       const invalidIds = linkIds.filter(
         id => typeof id !== 'string' || !id.trim()
       );
-      console.log({ invalidIds });
       if (invalidIds.length > 0) {
         return res.status(StatusCode.BAD_REQUEST).json({
           error: 'Bad Request',

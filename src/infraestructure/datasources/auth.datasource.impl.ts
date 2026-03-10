@@ -221,8 +221,6 @@ export class AuthDatasourceImpl implements AuthDatasource {
         },
       });
 
-    console.log({ emailVerificationToken });
-
     return [
       undefined,
       emailVerificationToken
