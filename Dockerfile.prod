@@ -26,6 +26,7 @@ FROM node:22-alpine AS production
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/postgres"
 
 RUN corepack enable
 
@@ -40,6 +41,7 @@ RUN pnpm install --frozen-lockfile --prod
 
 # Generar cliente con el binario correcto de ESTE contenedor (linux/amd64)
 COPY --from=builder /usr/src/app/prisma ./prisma
+COPY --from=builder /usr/src/app/prisma.config.ts ./prisma.config.ts
 
 RUN pnpm dlx prisma generate
 
@@ -53,4 +55,5 @@ USER app
 EXPOSE 3000
 
 # Migraciones + arranque
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/app.js"]
+
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/src/app.js"]
