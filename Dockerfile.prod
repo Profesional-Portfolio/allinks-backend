@@ -40,10 +40,13 @@ RUN pnpm install --frozen-lockfile --prod
 
 # Generar cliente con el binario correcto de ESTE contenedor (linux/amd64)
 COPY --from=builder /usr/src/app/prisma ./prisma
+
 RUN pnpm dlx prisma generate
 
 # Compilado del builder
 COPY --from=builder /usr/src/app/dist ./dist
+
+RUN chown -R app:app /usr/src/app
 
 USER app
 
