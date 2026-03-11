@@ -27,25 +27,25 @@ jobs:
 
       # ──
 
-      # - name: Setup pnpm
-      #   uses: pnpm/action-setup@v4
-      #   with:
-      #     version: latest
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
 
-      # - name: Setup Node.js 22
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: '22'
-      #     cache: 'pnpm'
-      #     cache-dependency-path: pnpm-lock.yaml
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
 
-      # - name: Install backend dependencies
-      #   run: pnpm install --frozen-lockfile
+      - name: Install backend dependencies
+        run: pnpm install --frozen-lockfile
 
-      # - name: Generate Prisma client
-      #   env:
-      #     DATABASE_URL: 'postgresql://dummy:dummy@localhost:5432/dummy'
-      #   run: pnpm dlx prisma generate
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pnpm dlx prisma generate
 
       # - name: Run unit tests
       #   run: pnpm test:unit
