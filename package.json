@@ -26,6 +26,7 @@
   },
   "keywords": [],
   "author": "",
+  "type": "module",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Profesional-Portfolio/allinks-backend/issues"
