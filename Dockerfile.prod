@@ -6,17 +6,18 @@ ENV PATH="$PNPM_HOME:$PATH"
 
 RUN corepack enable
 
-WORKDIR /build
+WORKDIR /usr/src/app
 
-# Install ALL deps (including devDeps) so we can compile TypeScript
+# Instalar deps (layer cache — solo se re-ejecuta si cambia package.json/lockfile)
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-# Copy source
-COPY . .
-
-# Generate Prisma client and compile TypeScript
+# Copiar SOLO el schema primero para cachear prisma generate
+COPY prisma ./prisma
 RUN pnpm dlx prisma generate
+
+# Ahora copiar el resto del source y compilar
+COPY . .
 RUN pnpm build
 
 # ─── Stage 2: Production ─────────────────────────────────────────────────────
@@ -28,27 +29,25 @@ ENV NODE_ENV=production
 
 RUN corepack enable
 
-# Create a non-root user for security
 RUN addgroup -S app && adduser -S app -G app
 
 WORKDIR /usr/src/app
 
-# Copy package files and install ONLY production deps
 COPY package.json pnpm-lock.yaml ./
+
+# prisma debe estar en "dependencies" (no devDependencies) para esto
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy compiled output from builder
-COPY --from=builder /build/dist ./dist
+# Generar cliente con el binario correcto de ESTE contenedor (linux/amd64)
+COPY --from=builder /usr/src/app/prisma ./prisma
+RUN pnpm dlx prisma generate
 
-# Copy Prisma schema + client (needed for migrations and the runtime client)
-COPY --from=builder /build/prisma ./prisma
-COPY --from=builder /build/node_modules/.pnpm/@prisma ./node_modules/.pnpm/@prisma
-COPY --from=builder /build/node_modules/.prisma ./node_modules/.prisma
+# Compilado del builder
+COPY --from=builder /usr/src/app/dist ./dist
 
-# Switch to non-root user
 USER app
 
 EXPOSE 3000
 
-# Run DB migrations then start the compiled server
-CMD ["sh", "-c", "node -e \"require('child_process').execSync('pnpm run db:deploy', {stdio: 'inherit'})\" && node dist/app.js"]
+# Migraciones + arranque
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/app.js"]

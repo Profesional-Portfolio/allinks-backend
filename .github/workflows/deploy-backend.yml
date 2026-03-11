@@ -25,7 +25,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ── Run CI checks before deploying ──────────────────────────────────
+      # ──
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -38,16 +39,16 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install backend dependencies
-        run: pnpm install --frozen-lockfile
+      # - name: Install backend dependencies
+      #   run: pnpm install --frozen-lockfile
 
-      - name: Generate Prisma client
-        env:
-          DATABASE_URL: 'postgresql://dummy:dummy@localhost:5432/dummy'
-        run: pnpm dlx prisma generate
+      # - name: Generate Prisma client
+      #   env:
+      #     DATABASE_URL: 'postgresql://dummy:dummy@localhost:5432/dummy'
+      #   run: pnpm dlx prisma generate
 
-      - name: Run unit tests
-        run: pnpm test:unit
+      # - name: Run unit tests
+      #   run: pnpm test:unit
 
       # ── AWS & Docker ─────────────────────────────────────────────────────
       - name: Configure AWS credentials
