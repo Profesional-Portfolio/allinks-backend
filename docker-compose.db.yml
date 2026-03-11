@@ -1,12 +1,15 @@
-version: '3.7'
-
 services:
-  postgres:
+  db:
     image: postgres:15
     restart: always
-    hostname: devlinks-postgres
-    container_name: devlinks-postgres
-    env_file:
-      - .env.test
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: prisma
+      POSTGRES_DB: postgres
     ports:
-      - '5433:5432'
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  pgdata:

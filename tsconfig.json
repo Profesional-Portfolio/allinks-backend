@@ -25,9 +25,10 @@
   "include": [
     "src/**/*.ts",
     "prisma.config.ts",
+    "generated/**/*",
     "scripts/**/*",
     "tests/**/*",
     "tests/**/*.test.ts"
   ],
-  "exclude": ["dist", "generated"]
+  "exclude": ["dist"]
 }
