@@ -1,11 +1,11 @@
 export class LinkEntity {
-  id: string;
-  user_id: string;
-  platform: string;
-  url: string;
-  title: string;
-  display_order: number;
-  is_active: boolean;
-  created_at: Date;
-  updated_at: Date;
+  created_at!: Date;
+  display_order!: number;
+  id!: string;
+  is_active!: boolean;
+  platform!: string;
+  title!: string;
+  updated_at!: Date;
+  url!: string;
+  user_id!: string;
 }

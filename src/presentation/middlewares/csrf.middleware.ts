@@ -3,7 +3,6 @@ import { Request } from 'express';
 import { ENV } from '@/config/env';
 
 export const {
-  invalidCsrfTokenError, // This is the default error thrown when the CSRF token validation fails
   generateCsrfToken, // Use this in your routes to provide a CSRF hash + token cookie and token
   validateRequest, // Also a stand-alone validator
   doubleCsrfProtection, // This is the default CSRF protection middleware
