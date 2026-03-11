@@ -19,6 +19,9 @@
     },
     "types": ["jest", "node"]
   },
+  "tsc-alias": {
+    "resolveFullPaths": true
+  },
   "include": [
     "src/**/*.ts",
     "prisma.config.ts",
