@@ -13,6 +13,7 @@
     "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "noEmit": true,
 
     "paths": {
       "@/prisma/*": ["./generated/prisma/*"],
@@ -28,6 +29,11 @@
     "resolveFullPaths": true
   },
 
-  "include": ["./src/**/*.ts", "./generated/**/*", "./tests/**/*"],
+  "include": [
+    "./src/**/*.ts",
+    "./generated/**/*",
+    "./tests/**/*",
+    "./tsup.config.ts"
+  ],
   "exclude": ["dist", "node_modules", "./tests/**/*"]
 }

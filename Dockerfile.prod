@@ -56,4 +56,4 @@ EXPOSE 3000
 
 # Migraciones + arranque
 
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/src/app.js"]
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/app.js"]
