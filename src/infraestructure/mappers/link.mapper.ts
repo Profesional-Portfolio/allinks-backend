@@ -1,7 +1,7 @@
 import { LinkEntity } from '@/domain/entities';
 
 export class LinkMapper {
-  static toEntity(link: Record<string, any>): LinkEntity {
+  static toEntity(link: LinkEntity): LinkEntity {
     return {
       id: link.id,
       user_id: link.user_id,

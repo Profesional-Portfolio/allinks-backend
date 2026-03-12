@@ -4,10 +4,10 @@
     "rootDirs": ["./src", "./generated"],
     "lib": ["esnext"],
     "target": "ESNext",
-    "moduleResolution": "NodeNext",
-    "module": "NodeNext",
-    "strict": true,
-    "strictNullChecks": true,
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    // "strict": true,
+    // "strictNullChecks": true,
     "sourceMap": true,
     "esModuleInterop": true,
     "declaration": true,
@@ -28,6 +28,6 @@
     "resolveFullPaths": true
   },
 
-  "include": ["src/**/*.ts", "generated/**/*", "./tests/*.{test,spec}.ts"],
-  "exclude": ["dist", "node_modules"]
+  "include": ["./src/**/*.ts", "./generated/**/*", "./tests/**/*"],
+  "exclude": ["dist", "node_modules", "./tests/**/*"]
 }

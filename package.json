@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "test:unit": "jest -c jest.unit.config.ts --coverage --coverageDirectory=coverage",
     "test:integration": "jest -c jest.integration.config.ts --forceExit --detectOpenHandles",
