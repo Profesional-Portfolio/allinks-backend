@@ -1,28 +1,21 @@
 {
-  "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolvePackageJsonExports": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ES2023",
-    "sourceMap": true,
     "outDir": "./dist",
-    "incremental": true,
-    "skipLibCheck": true,
+    "rootDirs": ["./src", "./generated"],
+    "lib": ["esnext"],
+    "target": "ESNext",
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "strict": true,
     "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
     "paths": {
-      "@/generated/*": ["./generated/*"],
+      "@/prisma/*": ["./generated/prisma/*"],
       "@/presentation/*": ["./src/presentation/*"],
       "@/config/*": ["./src/config/*"],
       "@/domain/*": ["./src/domain/*"],
@@ -34,13 +27,7 @@
   "tsc-alias": {
     "resolveFullPaths": true
   },
-  "include": [
-    "src/**/*.ts",
-    "prisma.config.ts",
-    "generated/**/*",
-    "scripts/**/*",
-    "tests/**/*",
-    "tests/**/*.test.ts"
-  ],
-  "exclude": ["dist"]
+
+  "include": ["src/**/*.ts", "generated/**/*", "./tests/*.{test,spec}.ts"],
+  "exclude": ["dist", "node_modules"]
 }

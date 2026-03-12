@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
+import dotenv from 'dotenv';
+dotenv.config();
 import { defineConfig, env } from 'prisma/config';
 
-if (process.env.NODE_ENV !== 'production') {
-  (async () => {
-    await import('dotenv/config');
-  })();
-}
+// if (process.env.NODE_ENV !== 'production') {
+//   (async () => {
+//     await import('dotenv/config');
+//   })();
+// }
 
 export default defineConfig({
   datasource: {

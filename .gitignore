@@ -4,6 +4,8 @@ dist/
 .env.*
 coverage/
 .neon_local/
-generated/prisma
+cache_data/
+src/generated/
+generated/
 postgres_data/
 redis_data/

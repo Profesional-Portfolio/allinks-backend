@@ -85,7 +85,6 @@ export default class Server {
       }
     );
 
-
     this.app.use((_, res) => {
       res.status(StatusCode.NOT_FOUND).json(
         ResponseFormatter.error({

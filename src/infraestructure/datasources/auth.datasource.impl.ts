@@ -14,7 +14,7 @@ import {
   BadRequestException,
   UnauthorizedException,
 } from '@/domain/exceptions';
-import { PrismaClient } from '@/generated/prisma/client';
+import { PrismaClient } from '../../../generated/prisma/client';
 
 export class AuthDatasourceImpl implements AuthDatasource {
   constructor(

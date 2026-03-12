@@ -12,7 +12,7 @@ import {
   Exception,
   NotFoundException,
 } from '@/domain/exceptions';
-import { PrismaClient } from '@/generated/prisma/client';
+import { PrismaClient } from '../../../generated/prisma/client';
 import { LinkMapper } from '../mappers';
 
 export class LinksDataSourceImpl implements LinksDataSource {
