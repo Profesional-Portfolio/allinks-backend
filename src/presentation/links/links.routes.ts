@@ -242,7 +242,7 @@ export const LinksRoutes = {
      *               $ref: '#/components/schemas/InternalServerErrorResponse'
      */
 
-    router.get('/', controller.getLinks);
+    router.get('/', authMiddleware.authenticate, controller.getLinks);
 
     /**
      * @swagger

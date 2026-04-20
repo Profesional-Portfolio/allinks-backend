@@ -145,6 +145,7 @@ export class LinksDataSourceImpl implements LinksDataSource {
   ): Promise<[Exception | undefined, LinkEntity[]]> {
     try {
       const { user_id } = userIdDto;
+      console.log({ user_id });
       const links = await this.prismadb.link.findMany({
         orderBy: {
           display_order: 'asc',
@@ -153,6 +154,8 @@ export class LinksDataSourceImpl implements LinksDataSource {
           user_id,
         },
       });
+
+      console.log({ links });
 
       const linksMapped = links.map(link => LinkMapper.toEntity(link));
 

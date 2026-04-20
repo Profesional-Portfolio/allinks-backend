@@ -83,6 +83,7 @@ export class LinksController {
 
   getLinks = async (req: Request, res: Response) => {
     const user_id = req.user?.id ?? '';
+    console.log({ user_id });
     const [error, result] = await this.getLinksUseCase.execute({ user_id });
 
     if (error) {

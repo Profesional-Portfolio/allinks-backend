@@ -17,8 +17,6 @@ export class AuthMiddleware {
       // Primero intentar obtener el token de las cookies
       let token = req.cookies?.[COOKIE_NAMES.ACCESS_TOKEN];
 
-      console.log({ token });
-
       // Si no hay token en cookies, intentar desde el header Authorization
       if (!token) {
         const authHeader = req.headers.authorization;
