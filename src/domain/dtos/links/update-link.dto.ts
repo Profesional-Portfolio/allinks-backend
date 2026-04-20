@@ -1,13 +1,14 @@
 import { z } from 'zod';
-import { createLinkDto } from './create-link.dto';
+
 import { idDto, userIdDto } from '../shared';
+import { createLinkDto } from './create-link.dto';
 
 export const updateLinkDto = z
   .object({
-    platform: createLinkDto.shape.platform.optional(),
-    url: createLinkDto.shape.url.optional(),
-    title: createLinkDto.shape.title.optional(),
     is_active: createLinkDto.shape.is_active.optional(),
+    platform: createLinkDto.shape.platform.optional(),
+    title: createLinkDto.shape.title.optional(),
+    url: createLinkDto.shape.url.optional(),
   })
   .extend(idDto.shape)
   .extend(userIdDto.shape);

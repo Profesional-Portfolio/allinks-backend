@@ -1,11 +1,14 @@
-import request from 'supertest';
+import request, { Response } from 'supertest';
+import TestAgent from 'supertest/lib/agent';
 import { App } from 'supertest/types';
 
-export const getCsrfAgent = async (app: App) => {
+export const getCsrfAgent = async (
+  app: App
+): Promise<{ agent: TestAgent; csrfToken: string }> => {
   const agent = request.agent(app);
-  const response = await agent.get('/api/csrf-token').expect(200);
+  const response: Response = await agent.get('/api/csrf-token').expect(200);
   return {
     agent,
-    csrfToken: response.body.csrfToken,
+    csrfToken: (response.body as { csrfToken: string }).csrfToken,
   };
 };

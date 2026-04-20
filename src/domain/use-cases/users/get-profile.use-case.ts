@@ -1,14 +1,14 @@
 import {
   Exception,
-  UserWithoutPassword,
   UsersRepository,
+  UserWithoutPassword,
 } from '@/domain/index';
 import { CacheService } from '@/infraestructure/services';
 
 interface IGetProfileUseCase {
   execute(
     id: UserWithoutPassword['id']
-  ): Promise<[Exception | undefined, UserWithoutPassword | null]>;
+  ): Promise<[Exception | undefined, null | UserWithoutPassword]>;
 }
 
 export class GetProfileUseCase implements IGetProfileUseCase {
@@ -19,7 +19,7 @@ export class GetProfileUseCase implements IGetProfileUseCase {
 
   execute = async (
     id: UserWithoutPassword['id']
-  ): Promise<[Exception | undefined, UserWithoutPassword | null]> => {
+  ): Promise<[Exception | undefined, null | UserWithoutPassword]> => {
     // 1. Try to get from cache
     const cachedUser = await this.cacheService.getUserProfile(id);
     if (cachedUser) {

@@ -1,8 +1,8 @@
 import {
   Exception,
   UpdateProfileUserDto,
-  UserWithoutPassword,
   UsersRepository,
+  UserWithoutPassword,
 } from '@/domain/index';
 import { CacheService } from '@/infraestructure/services';
 
@@ -10,7 +10,7 @@ interface IUpdateProfileUseCase {
   execute(
     userId: UserWithoutPassword['id'],
     data: UpdateProfileUserDto
-  ): Promise<[Exception | undefined, UserWithoutPassword | null]>;
+  ): Promise<[Exception | undefined, null | UserWithoutPassword]>;
 }
 
 export class UpdateProfileUseCase implements IUpdateProfileUseCase {
@@ -22,7 +22,7 @@ export class UpdateProfileUseCase implements IUpdateProfileUseCase {
   execute = async (
     userId: UserWithoutPassword['id'],
     data: UpdateProfileUserDto
-  ): Promise<[Exception | undefined, UserWithoutPassword | null]> => {
+  ): Promise<[Exception | undefined, null | UserWithoutPassword]> => {
     const [error, user] = await this.usersRepository.updateProfileUser(
       userId,
       data

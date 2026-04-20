@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { UpdateProfileUseCase } from '@/domain/use-cases/users/update-profile.use-case';
+
 import {
-  mockUsersRepository,
   mockCacheService,
+  mockUsersRepository,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
 
@@ -12,27 +14,37 @@ describe('UpdateProfileUseCase', () => {
     jest.clearAllMocks();
     updateProfileUseCase = new UpdateProfileUseCase(
       mockUsersRepository,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockCacheService as any
     );
   });
 
   const updateData = {
+    bio: 'New bio',
     first_name: 'Updated',
     last_name: 'Name',
-    bio: 'New bio',
     username: 'updatedusername',
   };
 
   describe('execute', () => {
     it('should update profile and invalidate cache successfully', async () => {
       const updatedUser = { ...mockUserWithoutPassword, ...updateData };
-      mockUsersRepository.updateProfileUser.mockResolvedValue([undefined, updatedUser]);
+      mockUsersRepository.updateProfileUser.mockResolvedValue([
+        undefined,
+        updatedUser,
+      ]);
 
-      const [error, user] = await updateProfileUseCase.execute('user-123', updateData);
+      const [error, user] = await updateProfileUseCase.execute(
+        'user-123',
+        updateData
+      );
 
       expect(error).toBeUndefined();
       expect(user).toEqual(updatedUser);
-      expect(mockUsersRepository.updateProfileUser).toHaveBeenCalledWith('user-123', updateData);
+      expect(mockUsersRepository.updateProfileUser).toHaveBeenCalledWith(
+        'user-123',
+        updateData
+      );
       expect(mockCacheService.invalidateProfile).toHaveBeenCalledWith(
         updatedUser.id,
         updatedUser.username
@@ -41,9 +53,16 @@ describe('UpdateProfileUseCase', () => {
 
     it('should return error if update fails', async () => {
       const mockError = { message: 'Update failed', statusCode: 400 };
-      mockUsersRepository.updateProfileUser.mockResolvedValue([mockError as any, null]);
+      mockUsersRepository.updateProfileUser.mockResolvedValue([
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mockError as any,
+        null,
+      ]);
 
-      const [error, user] = await updateProfileUseCase.execute('user-123', updateData);
+      const [error, user] = await updateProfileUseCase.execute(
+        'user-123',
+        updateData
+      );
 
       expect(error).toEqual(mockError);
       expect(user).toBeNull();

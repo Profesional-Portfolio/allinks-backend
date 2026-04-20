@@ -1,8 +1,9 @@
 import { ReorderLinksUseCase } from '@/domain/use-cases/links/reorder-links.use-case';
+
 import {
+  mockCacheService,
   mockLinksRepository,
   mockUsersRepository,
-  mockCacheService,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
 
@@ -19,16 +20,22 @@ describe('ReorderLinksUseCase', () => {
   });
 
   const payload = {
-    user_id: 'user-123',
     links: [
-      { id: 'link-1', display_order: 1 },
-      { id: 'link-2', display_order: 2 },
+      { display_order: 1, id: 'link-1' },
+      { display_order: 2, id: 'link-2' },
     ],
+    user_id: 'user-123',
   };
 
   it('should reorder links and invalidate cache successfully', async () => {
-    mockLinksRepository.reorderLinks.mockResolvedValue([undefined, 'Links reordered']);
-    mockUsersRepository.findUserById.mockResolvedValue([undefined, mockUserWithoutPassword]);
+    mockLinksRepository.reorderLinks.mockResolvedValue([
+      undefined,
+      'Links reordered',
+    ]);
+    mockUsersRepository.findUserById.mockResolvedValue([
+      undefined,
+      mockUserWithoutPassword,
+    ]);
 
     const [error, result] = await reorderLinksUseCase.execute(payload);
 
@@ -52,7 +59,10 @@ describe('ReorderLinksUseCase', () => {
   });
 
   it('should reorder links but not invalidate cache if user not found', async () => {
-    mockLinksRepository.reorderLinks.mockResolvedValue([undefined, 'Links reordered']);
+    mockLinksRepository.reorderLinks.mockResolvedValue([
+      undefined,
+      'Links reordered',
+    ]);
     mockUsersRepository.findUserById.mockResolvedValue([
       { message: 'User not found' } as any,
       null,

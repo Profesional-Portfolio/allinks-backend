@@ -1,35 +1,37 @@
 import { Request, Response } from 'express';
+
 import {
-  registerUserDto,
-  loginUseDto,
-  verifyEmailDto,
   forgotPasswordDto,
-  validateTokenDto,
-  resetPasswordDto,
+  loginUseDto,
+  registerUserDto,
   resendEmailVerificationDto,
+  resetPasswordDto,
+  validateTokenDto,
+  verifyEmailDto,
 } from '@/domain/dtos';
 import { StatusCode } from '@/domain/enums';
-import { validate } from '../middlewares';
+import { Exception, UploadImageUseCase } from '@/domain/index';
 import {
-  COOKIE_NAMES,
-  accessTokenCookieOptions,
-  refreshTokenCookieOptions,
-  clearCookieOptions,
-} from '@/infraestructure/utils';
-import {
-  RegisterUserUseCase,
-  LoginUserUseCase,
-  RefreshTokenUseCase,
-  SendWelcomeEmailUseCase,
-  VerifyEmailUseCase,
-  ResetPasswordUseCase,
   ForgotPasswordUseCase,
-  ResendVerificationEmailUseCase,
-  ValidateResetTokenUseCase,
+  LoginUserUseCase,
   LogoutUserUseCase,
+  RefreshTokenUseCase,
+  RegisterUserUseCase,
+  ResendVerificationEmailUseCase,
+  ResetPasswordUseCase,
+  SendWelcomeEmailUseCase,
+  ValidateResetTokenUseCase,
+  VerifyEmailUseCase,
 } from '@/domain/use-cases/auth';
-import { UploadImageUseCase } from '@/domain/index';
+import {
+  accessTokenCookieOptions,
+  clearCookieOptions,
+  COOKIE_NAMES,
+  refreshTokenCookieOptions,
+} from '@/infraestructure/utils';
 import { ResponseFormatter } from '@/infraestructure/utils';
+
+import { validate } from '../middlewares';
 
 export class AuthController {
   constructor(
@@ -46,72 +48,15 @@ export class AuthController {
     private readonly logoutUserUseCase: LogoutUserUseCase
   ) {}
 
-  validateToken = async (req: Request, res: Response) => {
-    try {
-      const { token } = validate(validateTokenDto, req.body);
-
-      const [error, message] = await this.validateTokenUseCase.execute(token);
-
-      if (error) {
-        return res.status(error.statusCode).json(
-          ResponseFormatter.error({
-            message: error.message,
-            statusCode: error.statusCode,
-          })
-        );
-      }
-
-      return res.status(StatusCode.OK).json(
-        ResponseFormatter.success({
-          data: {},
-          message: message!,
-          statusCode: StatusCode.OK,
-        })
-      );
-    } catch (e: any) {
-      if (e.statusCode) {
-        return res.status(e.statusCode).json(ResponseFormatter.error({ message: e.message, statusCode: e.statusCode }));
-      }
-      return res.status(500).json({ status: 'error', message: 'Internal server error' });
-    }
-  };
-
-
-  resetPassword = async (req: Request, res: Response) => {
-    try {
-      const data = validate(resetPasswordDto, req.body);
-      const [error, message] = await this.resetPasswordUseCase.execute(data);
-
-      if (error) {
-        return res.status(error.statusCode).json(
-          ResponseFormatter.error({
-            message: error.message,
-            statusCode: error.statusCode,
-          })
-        );
-      }
-
-      return res.status(StatusCode.OK).json(
-        ResponseFormatter.success({
-          data: {},
-          message: message!,
-          statusCode: StatusCode.OK,
-        })
-      );
-    } catch (e: any) {
-      if (e.statusCode) {
-        return res.status(e.statusCode).json(ResponseFormatter.error({ message: e.message, statusCode: e.statusCode }));
-      }
-      return res.status(500).json({ status: 'error', message: 'Internal server error' });
-    }
-  };
-
-
   forgotPassword = async (req: Request, res: Response) => {
     try {
-      const data = validate(forgotPasswordDto, req.body);
+      const data = validate(
+        forgotPasswordDto,
+        req.body as Record<string, unknown>
+      );
 
-      const [exception, message] = await this.forgotPasswordUseCase.execute(data);
+      const [exception, message] =
+        await this.forgotPasswordUseCase.execute(data);
 
       if (exception) {
         return res.status(exception.statusCode).json(
@@ -125,54 +70,40 @@ export class AuthController {
       return res.status(StatusCode.OK).json(
         ResponseFormatter.success({
           data: {},
-          message: message!,
+          message: message ?? '',
           statusCode: StatusCode.OK,
         })
       );
-    } catch (e: any) {
-      if (e.statusCode) {
-        return res.status(e.statusCode).json(ResponseFormatter.error({ message: e.message, statusCode: e.statusCode }));
+    } catch (e: unknown) {
+      if (e instanceof Exception) {
+        return res.status(e.statusCode).json(
+          ResponseFormatter.error({
+            message: e.message,
+            statusCode: e.statusCode,
+          })
+        );
       }
-      return res.status(500).json({ status: 'error', message: 'Internal server error' });
+      return res
+        .status(500)
+        .json({ message: 'Internal server error', status: 'error' });
     }
   };
 
-
-  resendVerificationEmail = async (req: Request, res: Response) => {
-    const data = validate(resendEmailVerificationDto, req.body);
-    const [error, result] =
-      await this.resendVerificationEmailUseCase.execute(data);
-
-    if (error) {
-      return res.status(error.statusCode).json(
-        ResponseFormatter.error({
-          message: error.message,
-          statusCode: error.statusCode,
-        })
-      );
-    }
-
+  getProfile = (req: Request, res: Response) => {
     return res.status(StatusCode.OK).json(
       ResponseFormatter.success({
-        data: {},
-        message: 'Verification email sent successfully',
+        data: req.user,
+        message: 'Profile retrieved successfully',
         statusCode: StatusCode.OK,
       })
     );
   };
 
-  registerUser = async (req: Request, res: Response) => {
+  loginUser = async (req: Request, res: Response) => {
     try {
-      const data = validate(registerUserDto, req.body);
-      
-      if (req.file) {
-        const image = await this.uploadImageUseCase.execute(req.file.buffer);
-        if (image && image.url) {
-          data.avatar_url = image.url;
-        }
-      }
+      const data = validate(loginUseDto, req.body as Record<string, unknown>);
 
-      const [error, result] = await this.registerUserUseCase.execute(data);
+      const [error, result] = await this.loginUserUseCase.execute(data);
 
       if (error) {
         return res.status(error.statusCode).json(
@@ -183,99 +114,28 @@ export class AuthController {
         );
       }
 
-
-    if (!result || !result.tokens) {
-      return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
-        ResponseFormatter.error({
-          message: 'Registration failed: Missing tokens',
-          statusCode: StatusCode.INTERNAL_SERVER_ERROR,
-        })
-      );
-    }
-
-    // Establecer cookies con los tokens
-    res.cookie(
-      COOKIE_NAMES.ACCESS_TOKEN,
-      result.tokens.accessToken,
-      accessTokenCookieOptions
-    );
-    res.cookie(
-      COOKIE_NAMES.REFRESH_TOKEN,
-      result.tokens.refreshToken,
-      refreshTokenCookieOptions
-    );
-
-
-    const {
-      user: { id, email, first_name },
-    } = result;
-
-    try {
-      await this.sendWelcomeEmailUseCase.execute(id, email, first_name);
-    } catch (e) {
-      console.error('Failed to send welcome email:', e);
-    }
-
-
-      return res.status(StatusCode.CREATED).json(
-        ResponseFormatter.success({
-          data: {
-            user: result.user,
-          },
-          message: 'User registered successfully',
-          statusCode: StatusCode.CREATED,
-        })
-      );
-    } catch (e: any) {
-      if (e.statusCode) {
-        return res.status(e.statusCode).json(ResponseFormatter.error({ message: e.message, statusCode: e.statusCode }));
+      if (!result?.tokens) {
+        return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+          ResponseFormatter.error({
+            message: 'Login failed: Missing tokens',
+            statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+          })
+        );
       }
-      return res.status(500).json({ status: 'error', message: 'Internal server error' });
-    }
-  };
 
+      console.log({ result });
 
-
-
-  loginUser = async (req: Request, res: Response) => {
-    try {
-      const data = validate(loginUseDto, req.body);
-
-
-
-
-    const [error, result] = await this.loginUserUseCase.execute(data);
-
-    if (error) {
-      return res.status(error.statusCode).json(
-        ResponseFormatter.error({
-          message: error.message,
-          statusCode: error.statusCode,
-        })
+      // Establecer cookies con los tokens
+      res.cookie(
+        COOKIE_NAMES.ACCESS_TOKEN,
+        result.tokens.accessToken,
+        accessTokenCookieOptions
       );
-    }
-
-    if (!result || !result.tokens) {
-      return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
-        ResponseFormatter.error({
-          message: 'Login failed: Missing tokens',
-          statusCode: StatusCode.INTERNAL_SERVER_ERROR,
-        })
+      res.cookie(
+        COOKIE_NAMES.REFRESH_TOKEN,
+        result.tokens.refreshToken,
+        refreshTokenCookieOptions
       );
-    }
-
-    // Establecer cookies con los tokens
-    res.cookie(
-      COOKIE_NAMES.ACCESS_TOKEN,
-      result.tokens.accessToken,
-      accessTokenCookieOptions
-    );
-    res.cookie(
-      COOKIE_NAMES.REFRESH_TOKEN,
-      result.tokens.refreshToken,
-      refreshTokenCookieOptions
-    );
-
 
       return res.status(StatusCode.OK).json(
         ResponseFormatter.success({
@@ -286,20 +146,44 @@ export class AuthController {
           statusCode: StatusCode.OK,
         })
       );
-    } catch (e: any) {
-      if (e.statusCode) {
-        return res.status(e.statusCode).json(ResponseFormatter.error({ message: e.message, statusCode: e.statusCode }));
+    } catch (e: unknown) {
+      if (e instanceof Exception) {
+        return res.status(e.statusCode).json(
+          ResponseFormatter.error({
+            message: e.message,
+            statusCode: e.statusCode,
+          })
+        );
       }
-      return res.status(500).json({ status: 'error', message: 'Internal server error' });
+      return res
+        .status(500)
+        .json({ message: 'Internal server error', status: 'error' });
     }
   };
 
+  logout = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
 
+    if (userId) {
+      await this.logoutUserUseCase.execute(userId);
+    }
 
+    // Limpiar cookies
+    res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, clearCookieOptions);
+    res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, clearCookieOptions);
+
+    return res.status(StatusCode.OK).json(
+      ResponseFormatter.success({
+        data: {},
+        message: 'Logged out successfully',
+        statusCode: StatusCode.OK,
+      })
+    );
+  };
 
   refreshToken = async (req: Request, res: Response) => {
     // Obtener refresh token de las cookies en lugar del body
-    const refreshToken = req.cookies[COOKIE_NAMES.REFRESH_TOKEN];
+    const refreshToken = req.cookies[COOKIE_NAMES.REFRESH_TOKEN] as string;
 
     if (!refreshToken) {
       return res.status(StatusCode.BAD_REQUEST).json(
@@ -345,24 +229,188 @@ export class AuthController {
     );
   };
 
-  logout = async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+  registerUser = async (req: Request, res: Response) => {
+    try {
+      const data = validate(
+        registerUserDto,
+        req.body as Record<string, unknown>
+      );
 
-    if (userId) {
-      await this.logoutUserUseCase.execute(userId);
+      if (req.file) {
+        const image = await this.uploadImageUseCase.execute(req.file.buffer);
+        if ('url' in image) {
+          data.avatar_url = image.url;
+        }
+      }
+
+      const [error, result] = await this.registerUserUseCase.execute(data);
+
+      if (error) {
+        return res.status(error.statusCode).json(
+          ResponseFormatter.error({
+            message: error.message,
+            statusCode: error.statusCode,
+          })
+        );
+      }
+
+      if (!('tokens' in result)) {
+        return res.status(StatusCode.INTERNAL_SERVER_ERROR).json(
+          ResponseFormatter.error({
+            message: 'Registration failed: Missing tokens',
+            statusCode: StatusCode.INTERNAL_SERVER_ERROR,
+          })
+        );
+      }
+
+      // Establecer cookies con los tokens
+      res.cookie(
+        COOKIE_NAMES.ACCESS_TOKEN,
+        result.tokens.accessToken,
+        accessTokenCookieOptions
+      );
+      res.cookie(
+        COOKIE_NAMES.REFRESH_TOKEN,
+        result.tokens.refreshToken,
+        refreshTokenCookieOptions
+      );
+
+      const {
+        user: { email, first_name, id },
+      } = result;
+
+      try {
+        await this.sendWelcomeEmailUseCase.execute(id, email, first_name);
+      } catch (e) {
+        console.error('Failed to send welcome email:', e);
+      }
+
+      return res.status(StatusCode.CREATED).json(
+        ResponseFormatter.success({
+          data: {
+            user: result.user,
+          },
+          message: 'User registered successfully',
+          statusCode: StatusCode.CREATED,
+        })
+      );
+    } catch (e: unknown) {
+      if (e instanceof Exception) {
+        return res.status(e.statusCode).json(
+          ResponseFormatter.error({
+            message: e.message,
+            statusCode: e.statusCode,
+          })
+        );
+      }
+      return res
+        .status(500)
+        .json({ message: 'Internal server error', status: 'error' });
     }
+  };
 
-    // Limpiar cookies
-    res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, clearCookieOptions);
-    res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, clearCookieOptions);
+  resendVerificationEmail = async (req: Request, res: Response) => {
+    const data = validate(
+      resendEmailVerificationDto,
+      req.body as Record<string, unknown>
+    );
+    const [error] = await this.resendVerificationEmailUseCase.execute(data);
+
+    if (error) {
+      return res.status(error.statusCode).json(
+        ResponseFormatter.error({
+          message: error.message,
+          statusCode: error.statusCode,
+        })
+      );
+    }
 
     return res.status(StatusCode.OK).json(
       ResponseFormatter.success({
         data: {},
-        message: 'Logged out successfully',
+        message: 'Verification email sent successfully',
         statusCode: StatusCode.OK,
       })
     );
+  };
+
+  resetPassword = async (req: Request, res: Response) => {
+    try {
+      const data = validate(
+        resetPasswordDto,
+        req.body as Record<string, unknown>
+      );
+      const [error, message] = await this.resetPasswordUseCase.execute(data);
+
+      if (error) {
+        return res.status(error.statusCode).json(
+          ResponseFormatter.error({
+            message: error.message,
+            statusCode: error.statusCode,
+          })
+        );
+      }
+
+      return res.status(StatusCode.OK).json(
+        ResponseFormatter.success({
+          data: {},
+          message: message ?? '',
+          statusCode: StatusCode.OK,
+        })
+      );
+    } catch (e: unknown) {
+      if (e instanceof Exception) {
+        return res.status(e.statusCode).json(
+          ResponseFormatter.error({
+            message: e.message,
+            statusCode: e.statusCode,
+          })
+        );
+      }
+      return res
+        .status(500)
+        .json({ message: 'Internal server error', status: 'error' });
+    }
+  };
+
+  validateToken = async (req: Request, res: Response) => {
+    try {
+      const { token } = validate(
+        validateTokenDto,
+        req.body as Record<string, unknown>
+      );
+
+      const [error, message] = await this.validateTokenUseCase.execute(token);
+
+      if (error) {
+        return res.status(error.statusCode).json(
+          ResponseFormatter.error({
+            message: error.message,
+            statusCode: error.statusCode,
+          })
+        );
+      }
+
+      return res.status(StatusCode.OK).json(
+        ResponseFormatter.success({
+          data: {},
+          message: message ?? '',
+          statusCode: StatusCode.OK,
+        })
+      );
+    } catch (e: unknown) {
+      if (e instanceof Exception) {
+        return res.status(e.statusCode).json(
+          ResponseFormatter.error({
+            message: e.message,
+            statusCode: e.statusCode,
+          })
+        );
+      }
+      return res
+        .status(500)
+        .json({ message: 'Internal server error', status: 'error' });
+    }
   };
 
   verifyEmail = async (req: Request, res: Response) => {
@@ -379,8 +427,7 @@ export class AuthController {
 
     const validatedToken = validate(verifyEmailDto, { token });
 
-    const [exception, message] =
-      await this.verifyEmailUseCase.execute(validatedToken);
+    const [exception] = await this.verifyEmailUseCase.execute(validatedToken);
 
     if (exception) {
       return res.status(exception.statusCode).json(
@@ -395,16 +442,6 @@ export class AuthController {
       ResponseFormatter.success({
         data: {},
         message: 'Email verified successfully',
-        statusCode: StatusCode.OK,
-      })
-    );
-  };
-
-  getProfile = async (req: Request, res: Response) => {
-    return res.status(StatusCode.OK).json(
-      ResponseFormatter.success({
-        data: req.user,
-        message: 'Profile retrieved successfully',
         statusCode: StatusCode.OK,
       })
     );

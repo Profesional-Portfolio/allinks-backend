@@ -1,9 +1,10 @@
+import { ENV } from '@/config/env';
 import { UserEntity } from '@/domain/entities';
-import { AuthRepository } from '../../repositories/auth.repository';
 import { EmailService } from '@/domain/interfaces';
 import { EmailTemplates } from '@/infraestructure/templates/email.templates';
 import { generateToken } from '@/infraestructure/utils';
-import { ENV } from '@/config/env';
+
+import { AuthRepository } from '../../repositories/auth.repository';
 
 export interface ISendWelcomeEmailUseCase {
   execute(
@@ -24,7 +25,7 @@ export class SendWelcomeEmailUseCase {
     email: string,
     name: string
   ): Promise<boolean> {
-    const { token: verificationToken, expires_at: expires_at } =
+    const { expires_at: expires_at, token: verificationToken } =
       generateToken();
 
     await this.authRepository.deleteUserEmailVerificationTokens(userId);
@@ -35,13 +36,13 @@ export class SendWelcomeEmailUseCase {
       expires_at
     );
 
-    const verificationLink = `${ENV.MAIN_FRONTEND_HOST}/auth/verify-email?token=${verificationToken}`;
+    const verificationLink = `${ENV.MAIN_FRONTEND_HOST ?? ''}/auth/verify-email?token=${verificationToken}`;
 
     const sent = await this.emailService.sendEmail({
-      to: email,
-      subject: '¡Bienvenido! Verifica tu cuenta',
       html: EmailTemplates.welcomeEmail(name, verificationLink),
+      subject: '¡Bienvenido! Verifica tu cuenta',
       text: EmailTemplates.welcomeEmailText(name, verificationLink),
+      to: email,
     });
 
     return sent;

@@ -7,7 +7,7 @@ export function generateToken() {
   expires_at.setHours(expires_at.getHours() + 1);
 
   return {
-    token,
     expires_at,
+    token,
   };
 }

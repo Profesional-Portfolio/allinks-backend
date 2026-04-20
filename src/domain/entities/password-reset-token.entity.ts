@@ -1,10 +1,10 @@
 export class PasswordResetTokenEntity {
-  public id: string;
-  public user_id: string;
-  public token: string;
-  public expires_at: Date;
-  public used_at: Date | null;
   public created_at: Date;
+  public expires_at: Date;
+  public id: string;
+  public token: string;
+  public used_at: Date | null;
+  public user_id: string;
 
   constructor(
     id: string,
@@ -22,18 +22,10 @@ export class PasswordResetTokenEntity {
     this.created_at = created_at;
   }
 
-  public isExpired(): boolean {
-    return this.expires_at < new Date();
-  }
-
-  public isValid(): boolean {
-    return !this.used_at && !this.isExpired();
-  }
-
-  public static fromObject(object: {
-    [key: string]: any;
-  }): PasswordResetTokenEntity {
-    const { id, user_id, token, expires_at, used, created_at } = object;
+  public static fromObject(
+    object: Record<string, unknown>
+  ): PasswordResetTokenEntity {
+    const { created_at, expires_at, id, token, used, user_id } = object;
 
     if (!id) throw new Error('id is required');
     if (!user_id) throw new Error('user_id is required');
@@ -41,12 +33,20 @@ export class PasswordResetTokenEntity {
     if (!expires_at) throw new Error('expires_at is required');
 
     return new PasswordResetTokenEntity(
-      id,
-      user_id,
-      token,
-      new Date(expires_at),
-      used ?? false,
-      created_at ? new Date(created_at) : new Date()
+      id as string,
+      user_id as string,
+      token as string,
+      new Date(expires_at as string),
+      used ? new Date(used as string) : null,
+      created_at ? new Date(created_at as string) : new Date()
     );
+  }
+
+  public isExpired(): boolean {
+    return this.expires_at < new Date();
+  }
+
+  public isValid(): boolean {
+    return !this.used_at && !this.isExpired();
   }
 }

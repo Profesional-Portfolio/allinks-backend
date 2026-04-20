@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { AuthorizeBulkLinksMiddleware } from '@/presentation/middlewares/authorize-bulk-links.middleware';
-import { mockLinksRepository } from '../../__mocks__';
+import { NextFunction, Request, Response } from 'express';
+
 import { StatusCode } from '@/domain/enums';
+import { AuthorizeBulkLinksMiddleware } from '@/presentation/middlewares/authorize-bulk-links.middleware';
+
+import { mockLinksRepository } from '../../__mocks__';
 
 describe('AuthorizeBulkLinksMiddleware', () => {
   let middleware: AuthorizeBulkLinksMiddleware;
@@ -12,12 +14,15 @@ describe('AuthorizeBulkLinksMiddleware', () => {
   beforeEach(() => {
     middleware = new AuthorizeBulkLinksMiddleware(mockLinksRepository);
     mockRequest = {
-      user: { id: 'user-123' } as any,
       body: {},
+      user: {
+        email: '',
+        id: 'user-123',
+      },
     };
     mockResponse = {
-      status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
+      status: jest.fn().mockReturnThis(),
     };
     nextFunction = jest.fn();
     jest.clearAllMocks();
@@ -27,7 +32,30 @@ describe('AuthorizeBulkLinksMiddleware', () => {
     mockRequest.body = { linkIds: ['link-1', 'link-2'] };
     mockLinksRepository.getLinksByIds.mockResolvedValue([
       undefined,
-      [{ id: 'link-1' }, { id: 'link-2' }] as any,
+      [
+        {
+          created_at: new Date(),
+          display_order: 0,
+          id: 'link-1',
+          is_active: false,
+          platform: '',
+          title: '',
+          updated_at: new Date(),
+          url: '',
+          user_id: '',
+        },
+        {
+          created_at: new Date(),
+          display_order: 0,
+          id: 'link-2',
+          is_active: false,
+          platform: '',
+          title: '',
+          updated_at: new Date(),
+          url: '',
+          user_id: '',
+        },
+      ],
     ]);
 
     await middleware.authorize(
@@ -58,7 +86,19 @@ describe('AuthorizeBulkLinksMiddleware', () => {
     mockRequest.body = { linkIds: ['link-1', 'link-2'] };
     mockLinksRepository.getLinksByIds.mockResolvedValue([
       undefined,
-      [{ id: 'link-1' }] as any,
+      [
+        {
+          created_at: new Date(),
+          display_order: 0,
+          id: 'link-1',
+          is_active: false,
+          platform: '',
+          title: '',
+          updated_at: new Date(),
+          url: '',
+          user_id: '',
+        },
+      ],
     ]);
 
     await middleware.authorize(

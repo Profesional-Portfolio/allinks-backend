@@ -27,9 +27,7 @@ export class GetLinksUseCase implements IGetLinksUseCase {
     const [error, links] = await this.linkRepository.getLinks(userIdDto);
 
     // 3. Save to cache if successful
-    if (!error && links) {
-      await this.cacheService.setUserLinks(userIdDto.user_id, links);
-    }
+    await this.cacheService.setUserLinks(userIdDto.user_id, links);
 
     return [error, links];
   }

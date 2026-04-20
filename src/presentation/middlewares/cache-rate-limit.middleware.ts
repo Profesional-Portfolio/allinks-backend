@@ -1,19 +1,18 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+
 import { CacheService } from '@/infraestructure/services';
-import { StatusCode } from '@/domain/enums';
-import { ResponseFormatter } from '@/infraestructure/utils';
 
 export class CacheRateLimitMiddleware {
   constructor(
     private readonly cacheService: CacheService,
-    private readonly limit: number = 10000, // max requests
-    private readonly endpoint: string = 'general'
+    private readonly limit = 10000, // max requests
+    private readonly endpoint = 'general'
   ) {}
 
   handle = async (req: Request, res: Response, next: NextFunction) => {
     try {
       // 1. Identify requester (UserId if authenticated, otherwise IP)
-      const identifier = req.user?.id || req.ip || 'unknown';
+      const identifier = req.user?.id ?? req.ip ?? 'unknown';
 
       // 2. Get current rate limit status
       const status = await this.cacheService.getRateLimit(

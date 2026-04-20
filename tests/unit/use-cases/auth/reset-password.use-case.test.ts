@@ -1,11 +1,12 @@
+import { BadRequestException } from '@/domain/exceptions';
 import { ResetPasswordUseCase } from '@/domain/use-cases/auth/reset-password.use-case';
+
 import {
   mockAuthRepository,
-  mockPasswordHasher,
   mockEmailService,
+  mockPasswordHasher,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
-import { BadRequestException } from '@/domain/exceptions';
 
 describe('ResetPasswordUseCase', () => {
   let resetPasswordUseCase: ResetPasswordUseCase;
@@ -20,30 +21,45 @@ describe('ResetPasswordUseCase', () => {
   });
 
   const mockToken = {
-    id: 'token-id',
-    user_id: 'user-123',
-    token: 'valid-token',
-    expires_at: new Date(Date.now() + 60 * 60 * 1000),
-    used_at: null,
     created_at: new Date(),
+    expires_at: new Date(Date.now() + 60 * 60 * 1000),
+    id: 'token-id',
     isExpired: () => false,
     isValid: () => true,
+    token: 'valid-token',
+    used_at: null,
+    user_id: 'user-123',
   };
 
   const resetDto = {
-    token: 'valid-token',
     password: 'NewPassword123!',
     password_confirmation: 'NewPassword123!',
+    token: 'valid-token',
   };
 
   describe('execute', () => {
     it('should reset password successfully', async () => {
-      mockAuthRepository.findPasswordResetToken.mockResolvedValue([undefined, mockToken]);
-      mockAuthRepository.findUserById.mockResolvedValue([undefined, mockUserWithoutPassword]);
+      mockAuthRepository.findPasswordResetToken.mockResolvedValue([
+        undefined,
+        mockToken,
+      ]);
+      mockAuthRepository.findUserById.mockResolvedValue([
+        undefined,
+        mockUserWithoutPassword,
+      ]);
       mockPasswordHasher.hash.mockResolvedValue('hashed-new-password');
-      mockAuthRepository.updatePassword.mockResolvedValue([undefined, undefined] as any);
-      mockAuthRepository.updatePasswordResetTokenUsedDate.mockResolvedValue([undefined, undefined] as any);
-      mockAuthRepository.deleteUserPasswordResetTokens.mockResolvedValue([undefined, undefined] as any);
+      mockAuthRepository.updatePassword.mockResolvedValue([
+        undefined,
+        undefined,
+      ] as any);
+      mockAuthRepository.updatePasswordResetTokenUsedDate.mockResolvedValue([
+        undefined,
+        undefined,
+      ] as any);
+      mockAuthRepository.deleteUserPasswordResetTokens.mockResolvedValue([
+        undefined,
+        undefined,
+      ] as any);
       mockEmailService.sendEmail.mockResolvedValue(true);
 
       const [error, result] = await resetPasswordUseCase.execute(resetDto);
@@ -58,7 +74,10 @@ describe('ResetPasswordUseCase', () => {
     });
 
     it('should return error if token not found', async () => {
-      mockAuthRepository.findPasswordResetToken.mockResolvedValue([undefined, null]);
+      mockAuthRepository.findPasswordResetToken.mockResolvedValue([
+        undefined,
+        null,
+      ]);
 
       const [error, result] = await resetPasswordUseCase.execute(resetDto);
 
@@ -68,7 +87,10 @@ describe('ResetPasswordUseCase', () => {
     });
 
     it('should return error if passwords do not match', async () => {
-      mockAuthRepository.findPasswordResetToken.mockResolvedValue([undefined, mockToken]);
+      mockAuthRepository.findPasswordResetToken.mockResolvedValue([
+        undefined,
+        mockToken,
+      ]);
 
       const [error, result] = await resetPasswordUseCase.execute({
         ...resetDto,
@@ -81,8 +103,15 @@ describe('ResetPasswordUseCase', () => {
     });
 
     it('should return error if token has been used', async () => {
-      const usedToken = { ...mockToken, used_at: new Date(), isValid: () => false };
-      mockAuthRepository.findPasswordResetToken.mockResolvedValue([undefined, usedToken]);
+      const usedToken = {
+        ...mockToken,
+        isValid: () => false,
+        used_at: new Date(),
+      };
+      mockAuthRepository.findPasswordResetToken.mockResolvedValue([
+        undefined,
+        usedToken,
+      ]);
 
       const [error, result] = await resetPasswordUseCase.execute(resetDto);
 
@@ -92,8 +121,16 @@ describe('ResetPasswordUseCase', () => {
     });
 
     it('should return error if token has expired', async () => {
-      const expiredToken = { ...mockToken, used_at: null, isExpired: () => true, isValid: () => false };
-      mockAuthRepository.findPasswordResetToken.mockResolvedValue([undefined, expiredToken]);
+      const expiredToken = {
+        ...mockToken,
+        isExpired: () => true,
+        isValid: () => false,
+        used_at: null,
+      };
+      mockAuthRepository.findPasswordResetToken.mockResolvedValue([
+        undefined,
+        expiredToken,
+      ]);
 
       const [error, result] = await resetPasswordUseCase.execute(resetDto);
 

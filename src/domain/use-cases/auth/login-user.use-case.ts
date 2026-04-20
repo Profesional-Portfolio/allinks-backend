@@ -1,18 +1,19 @@
-import { AuthRepository } from '../../repositories';
-import { LoginUserDto } from '../../dtos';
-import { TokenProvider, TokenPair } from '../../interfaces';
 import { Exception } from '@/domain/exceptions';
 import { CacheService } from '@/infraestructure/services/cache.service';
 
+import { LoginUserDto } from '../../dtos';
+import { TokenPair, TokenProvider } from '../../interfaces';
+import { AuthRepository } from '../../repositories';
+
 interface LoginUserResponse {
-  user: {
-    id: string;
-    email: string;
-    username: string;
-    first_name: string;
-    last_name: string;
-  };
   tokens: TokenPair;
+  user: {
+    email: string;
+    first_name: string;
+    id: string;
+    last_name: string;
+    username: string;
+  };
 }
 
 export class LoginUserUseCase {
@@ -32,8 +33,8 @@ export class LoginUserUseCase {
     }
 
     const [err, tokens] = await this.tokenProvider.generateTokenPair({
-      id: user.id,
       email: user.email,
+      id: user.id,
     });
 
     if (err) {
@@ -46,8 +47,8 @@ export class LoginUserUseCase {
     return [
       undefined,
       {
-        user,
         tokens,
+        user,
       },
     ];
   }

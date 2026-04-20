@@ -1,9 +1,10 @@
-import { GetLinksUseCase } from '@/domain/use-cases/links/get-links.use-case';
 import { LinkEntity } from '@/domain/entities';
+import { GetLinksUseCase } from '@/domain/use-cases/links/get-links.use-case';
+
 import {
-  mockLinksRepository,
   mockCacheService,
   mockLinksArrays,
+  mockLinksRepository,
 } from '../../../__mocks__';
 
 describe('GetLinksUseCase', () => {
@@ -11,7 +12,10 @@ describe('GetLinksUseCase', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    getLinksUseCase = new GetLinksUseCase(mockLinksRepository, mockCacheService as any);
+    getLinksUseCase = new GetLinksUseCase(
+      mockLinksRepository,
+      mockCacheService as any
+    );
   });
 
   const userIdDto = { user_id: 'user-1' };
@@ -37,7 +41,10 @@ describe('GetLinksUseCase', () => {
     expect(error).toBeUndefined();
     expect(links).toEqual(mockLinks);
     expect(mockLinksRepository.getLinks).toHaveBeenCalledWith(userIdDto);
-    expect(mockCacheService.setUserLinks).toHaveBeenCalledWith(userIdDto.user_id, mockLinks);
+    expect(mockCacheService.setUserLinks).toHaveBeenCalledWith(
+      userIdDto.user_id,
+      mockLinks
+    );
   });
 
   it('should return error if repository fails', async () => {

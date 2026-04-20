@@ -1,8 +1,9 @@
 import { ChangeVisibilityUseCase } from '@/domain/use-cases/links/delete-link.use-case';
+
 import {
+  mockCacheService,
   mockLinksRepository,
   mockUsersRepository,
-  mockCacheService,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
 
@@ -21,8 +22,14 @@ describe('ChangeVisibilityUseCase', () => {
   const payload = { id: 'link-123', user_id: 'user-123' };
 
   it('should change visibility and invalidate cache successfully', async () => {
-    mockLinksRepository.changeVisibility.mockResolvedValue([undefined, 'Visibility changed']);
-    mockUsersRepository.findUserById.mockResolvedValue([undefined, mockUserWithoutPassword]);
+    mockLinksRepository.changeVisibility.mockResolvedValue([
+      undefined,
+      'Visibility changed',
+    ]);
+    mockUsersRepository.findUserById.mockResolvedValue([
+      undefined,
+      mockUserWithoutPassword,
+    ]);
 
     const [error, result] = await changeVisibilityUseCase.execute(payload);
 
@@ -37,7 +44,10 @@ describe('ChangeVisibilityUseCase', () => {
 
   it('should return error if visibility change fails', async () => {
     const mockError = { message: 'Not found', statusCode: 404 };
-    mockLinksRepository.changeVisibility.mockResolvedValue([mockError as any, '']);
+    mockLinksRepository.changeVisibility.mockResolvedValue([
+      mockError as any,
+      '',
+    ]);
 
     const [error, result] = await changeVisibilityUseCase.execute(payload);
 
@@ -46,7 +56,10 @@ describe('ChangeVisibilityUseCase', () => {
   });
 
   it('should change visibility but not invalidate cache if user not found', async () => {
-    mockLinksRepository.changeVisibility.mockResolvedValue([undefined, 'Visibility changed']);
+    mockLinksRepository.changeVisibility.mockResolvedValue([
+      undefined,
+      'Visibility changed',
+    ]);
     mockUsersRepository.findUserById.mockResolvedValue([
       { message: 'User not found' } as any,
       null,

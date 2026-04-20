@@ -1,10 +1,10 @@
 import { UserEntity } from '@/domain/entities';
 
-export class UserMapper {
-  static toEntity(
+export const UserMapper = {
+  toEntity(
     object: UserEntity,
     excludePassword = false
-  ): UserEntity | Omit<UserEntity, 'password_hash'> {
+  ): Omit<UserEntity, 'password_hash'> | UserEntity {
     const user = new UserEntity(
       object.id,
       object.email,
@@ -22,10 +22,10 @@ export class UserMapper {
     );
 
     if (excludePassword) {
-      const { password_hash, ...userWithoutPassword } = user;
-      return userWithoutPassword;
+      delete (user as Partial<UserEntity>).password_hash;
+      return user;
     }
 
     return user;
-  }
-}
+  },
+};

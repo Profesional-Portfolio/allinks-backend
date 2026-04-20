@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { emailDto } from '../shared';
 
 export const resendEmailVerificationDto = z.object({

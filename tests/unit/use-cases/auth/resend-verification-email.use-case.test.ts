@@ -1,5 +1,6 @@
 import { ResendVerificationEmailUseCase } from '@/domain/use-cases/auth/resend-verification-email.use-case';
 import { SendWelcomeEmailUseCase } from '@/domain/use-cases/auth/send-welcome-email.use-case';
+
 import {
   mockAuthRepository,
   mockEmailService,
@@ -24,12 +25,19 @@ describe('ResendVerificationEmailUseCase', () => {
     );
   });
 
-  const successMessage = 'If the email exists, a verification email has been sent';
+  const successMessage =
+    'If the email exists, a verification email has been sent';
 
   describe('execute', () => {
     it('should resend verification email successfully', async () => {
-      const unverifiedUser = { ...mockUserWithoutPassword, email_verified: false };
-      mockAuthRepository.findUserByEmail.mockResolvedValue([undefined, unverifiedUser]);
+      const unverifiedUser = {
+        ...mockUserWithoutPassword,
+        email_verified: false,
+      };
+      mockAuthRepository.findUserByEmail.mockResolvedValue([
+        undefined,
+        unverifiedUser,
+      ]);
 
       const [error, result] = await resendVerificationEmailUseCase.execute({
         email: 'test@test.com',
@@ -58,7 +66,10 @@ describe('ResendVerificationEmailUseCase', () => {
 
     it('should not send email if user is already verified', async () => {
       const verifiedUser = { ...mockUserWithoutPassword, email_verified: true };
-      mockAuthRepository.findUserByEmail.mockResolvedValue([undefined, verifiedUser]);
+      mockAuthRepository.findUserByEmail.mockResolvedValue([
+        undefined,
+        verifiedUser,
+      ]);
 
       const [error, result] = await resendVerificationEmailUseCase.execute({
         email: 'test@test.com',

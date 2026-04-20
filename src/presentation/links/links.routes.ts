@@ -1,32 +1,34 @@
 import { Router } from 'express';
-import { LinksController } from './links.controller';
+
 import {
-  CreateLinkUseCase,
   ChangeVisibilityUseCase,
+  CreateLinkUseCase,
   GetLinksUseCase,
   ReorderLinksUseCase,
   UpdateLinkUseCase,
 } from '@/domain/use-cases/links';
+import {
+  CacheRedisAdapter,
+  JwtTokenProviderAdapter,
+} from '@/infraestructure/adapters';
 import { LinksDataSourceImpl } from '@/infraestructure/datasources/links.datasource.impl';
+import { UsersDatasourceImpl } from '@/infraestructure/datasources/users.datasource.impl';
 import prismadb from '@/infraestructure/prismadb';
+import {
+  LinksRepositoryImpl,
+  UsersRepositoryImpl,
+} from '@/infraestructure/repositories';
+import { CacheService } from '@/infraestructure/services';
+
 import {
   AuthMiddleware,
   AuthorizeBulkLinksMiddleware,
   AuthorizeLinkOwnerMiddleware,
 } from '../middlewares';
-import {
-  JwtTokenProviderAdapter,
-  CacheRedisAdapter,
-} from '@/infraestructure/adapters';
-import {
-  LinksRepositoryImpl,
-  UsersRepositoryImpl,
-} from '@/infraestructure/repositories';
-import { UsersDatasourceImpl } from '@/infraestructure/datasources/users.datasource.impl';
-import { CacheService } from '@/infraestructure/services';
+import { LinksController } from './links.controller';
 
-export class LinksRoutes {
-  static get routes(): Router {
+export const LinksRoutes = {
+  get routes(): Router {
     const router = Router();
 
     const datasource = new LinksDataSourceImpl(prismadb);
@@ -459,5 +461,5 @@ export class LinksRoutes {
     );
 
     return router;
-  }
-}
+  },
+};

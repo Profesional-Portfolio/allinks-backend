@@ -1,4 +1,4 @@
-import { jest, expect, beforeEach, afterEach } from '@jest/globals';
+import { afterEach, beforeEach, expect, jest } from '@jest/globals';
 import { toBeEmpty } from 'jest-extended';
 
 expect.extend({ toBeEmpty });

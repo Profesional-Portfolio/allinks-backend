@@ -4,9 +4,7 @@ interface ICheckAvailabilityUsernameUseCase {
   execute(username: string): Promise<[Exception | undefined, boolean]>;
 }
 
-export class CheckAvailabilityUsernameUseCase
-  implements ICheckAvailabilityUsernameUseCase
-{
+export class CheckAvailabilityUsernameUseCase implements ICheckAvailabilityUsernameUseCase {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   execute = async (username: string) => {

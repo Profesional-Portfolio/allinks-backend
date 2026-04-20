@@ -1,5 +1,5 @@
-export class EmailTemplates {
-  private static baseTemplate(content: string): string {
+export const EmailTemplates = {
+  baseTemplate(content: string): string {
     return `
       <!DOCTYPE html>
       <html lang="es">
@@ -90,54 +90,9 @@ export class EmailTemplates {
       </body>
       </html>
     `;
-  }
+  },
 
-  static welcomeEmail(name: string, verificationLink: string): string {
-    const content = `
-      <div class="header">
-        <div class="logo">🔗 AllLinks</div>
-      </div>
-      <div class="content">
-        <h1>¡Bienvenido, ${name}!</h1>
-        <p>Gracias por registrarte en nuestra plataforma. Estamos emocionados de tenerte con nosotros.</p>
-        <p>Para completar tu registro y verificar tu cuenta, haz clic en el siguiente botón:</p>
-        <div style="text-align: center;">
-          <a href="${verificationLink}" class="button">Verificar mi cuenta</a>
-        </div>
-        <p>O copia y pega el siguiente enlace en tu navegador:</p>
-        <p style="word-break: break-all; color: #2563eb;">${verificationLink}</p>
-        <div class="warning">
-          <strong>⚠️ Importante:</strong> Este enlace expirará en 24 horas.
-        </div>
-        <p>Si no creaste esta cuenta, puedes ignorar este correo.</p>
-      </div>
-      <div class="footer">
-        <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
-        <p>&copy; ${new Date().getFullYear()} AllLinks. Todos los derechos reservados.</p>
-      </div>
-    `;
-
-    return this.baseTemplate(content);
-  }
-
-  static welcomeEmailText(name: string, verificationLink: string): string {
-    return `
-      ¡Bienvenido, ${name}!
-
-      Gracias por registrarte en AllLinks. Para verificar tu cuenta, visita el siguiente enlace:
-
-      ${verificationLink}
-
-      Este enlace expirará en 24 horas.
-
-      Si no creaste esta cuenta, puedes ignorar este correo.
-
-      ---
-      AllLinks
-    `.trim();
-  }
-
-  static forgotPasswordEmail(name: string, resetLink: string): string {
+  forgotPasswordEmail(name: string, resetLink: string): string {
     const content = `
       <div class="header">
         <div class="logo">🔗 AllLinks</div>
@@ -159,14 +114,14 @@ export class EmailTemplates {
       </div>
       <div class="footer">
         <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
-        <p>&copy; ${new Date().getFullYear()} AllLinks. Todos los derechos reservados.</p>
+        <p>&copy; ${new Date().getFullYear().toString()} AllLinks. Todos los derechos reservados.</p>
       </div>
     `;
 
-    return this.baseTemplate(content);
-  }
+    return EmailTemplates.baseTemplate(content);
+  },
 
-  static forgotPasswordEmailText(name: string, resetLink: string): string {
+  forgotPasswordEmailText(name: string, resetLink: string): string {
     return `
       Restablecer contraseña
 
@@ -185,9 +140,9 @@ export class EmailTemplates {
       ---
       AllLinks
     `.trim();
-  }
+  },
 
-  static passwordResetConfirmationEmail(name: string): string {
+  passwordResetConfirmationEmail(name: string): string {
     const content = `
       <div class="header">
         <div class="logo">🔗 AllLinks</div>
@@ -203,14 +158,14 @@ export class EmailTemplates {
       </div>
       <div class="footer">
         <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
-        <p>&copy; ${new Date().getFullYear()} AllLinks. Todos los derechos reservados.</p>
+        <p>&copy; ${new Date().getFullYear().toString()} AllLinks. Todos los derechos reservados.</p>
       </div>
     `;
 
-    return this.baseTemplate(content);
-  }
+    return EmailTemplates.baseTemplate(content);
+  },
 
-  static passwordResetConfirmationEmailText(name: string): string {
+  passwordResetConfirmationEmailText(name: string): string {
     return `
       Contraseña actualizada
 
@@ -225,9 +180,9 @@ export class EmailTemplates {
       ---
       AllLinks
     `.trim();
-  }
+  },
 
-  static verificationCodeEmail(name: string, code: string): string {
+  verificationCodeEmail(name: string, code: string): string {
     const content = `
       <div class="header">
         <div class="logo">🔗 AllLinks</div>
@@ -244,14 +199,14 @@ export class EmailTemplates {
       </div>
       <div class="footer">
         <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
-        <p>&copy; ${new Date().getFullYear()} AllLinks. Todos los derechos reservados.</p>
+        <p>&copy; ${new Date().getFullYear().toString()} AllLinks. Todos los derechos reservados.</p>
       </div>
     `;
 
-    return this.baseTemplate(content);
-  }
+    return EmailTemplates.baseTemplate(content);
+  },
 
-  static verificationCodeEmailText(name: string, code: string): string {
+  verificationCodeEmailText(name: string, code: string): string {
     return `
       Tu código de verificación
 
@@ -268,5 +223,50 @@ export class EmailTemplates {
       ---
       AllLinks
     `.trim();
-  }
-}
+  },
+
+  welcomeEmail(name: string, verificationLink: string): string {
+    const content = `
+      <div class="header">
+        <div class="logo">🔗 AllLinks</div>
+      </div>
+      <div class="content">
+        <h1>¡Bienvenido, ${name}!</h1>
+        <p>Gracias por registrarte en nuestra plataforma. Estamos emocionados de tenerte con nosotros.</p>
+        <p>Para completar tu registro y verificar tu cuenta, haz clic en el siguiente botón:</p>
+        <div style="text-align: center;">
+          <a href="${verificationLink}" class="button">Verificar mi cuenta</a>
+        </div>
+        <p>O copia y pega el siguiente enlace en tu navegador:</p>
+        <p style="word-break: break-all; color: #2563eb;">${verificationLink}</p>
+        <div class="warning">
+          <strong>⚠️ Importante:</strong> Este enlace expirará en 24 horas.
+        </div>
+        <p>Si no creaste esta cuenta, puedes ignorar este correo.</p>
+      </div>
+      <div class="footer">
+        <p>Este correo fue enviado automáticamente, por favor no respondas.</p>
+        <p>&copy; ${new Date().getFullYear().toString()} AllLinks. Todos los derechos reservados.</p>
+      </div>
+    `;
+
+    return EmailTemplates.baseTemplate(content);
+  },
+
+  welcomeEmailText(name: string, verificationLink: string): string {
+    return `
+      ¡Bienvenido, ${name}!
+
+      Gracias por registrarte en AllLinks. Para verificar tu cuenta, visita el siguiente enlace:
+
+      ${verificationLink}
+
+      Este enlace expirará en 24 horas.
+
+      Si no creaste esta cuenta, puedes ignorar este correo.
+
+      ---
+      AllLinks
+    `.trim();
+  },
+};

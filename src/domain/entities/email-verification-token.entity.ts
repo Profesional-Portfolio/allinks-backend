@@ -1,17 +1,17 @@
 export class EmailVerificationTokenEntity {
-  public id: string;
-  public user_id: string;
-  public token: string;
-  public expires_at: Date;
-  public verified_at: Date | null;
   public created_at: Date;
+  public expires_at: Date;
+  public id: string;
+  public token: string;
+  public user_id: string;
+  public verified_at: Date | null;
 
   constructor(
     id: string,
     user_id: string,
     token: string,
     expires_at: Date,
-    verified_at: Date,
+    verified_at: Date | null,
     created_at: Date
   ) {
     this.id = id;
@@ -22,18 +22,10 @@ export class EmailVerificationTokenEntity {
     this.created_at = created_at;
   }
 
-  public isExpired(): boolean {
-    return this.expires_at < new Date();
-  }
-
-  public isValid(): boolean {
-    return !this.verified_at && !this.isExpired();
-  }
-
-  public static fromObject(object: {
-    [key: string]: any;
-  }): EmailVerificationTokenEntity {
-    const { id, user_id, token, expires_at, verified_at, created_at } = object;
+  public static fromObject(
+    object: Record<string, unknown>
+  ): EmailVerificationTokenEntity {
+    const { created_at, expires_at, id, token, user_id, verified_at } = object;
 
     if (!id) throw new Error('id is required');
     if (!user_id) throw new Error('userId is required');
@@ -41,12 +33,20 @@ export class EmailVerificationTokenEntity {
     if (!expires_at) throw new Error('expires_at is required');
 
     return new EmailVerificationTokenEntity(
-      id,
-      user_id,
-      token,
-      new Date(expires_at),
-      verified_at && new Date(verified_at),
-      created_at ? new Date(created_at) : new Date()
+      id as string,
+      user_id as string,
+      token as string,
+      new Date(expires_at as string),
+      verified_at ? new Date(verified_at as string) : null,
+      created_at ? new Date(created_at as string) : new Date()
     );
+  }
+
+  public isExpired(): boolean {
+    return this.expires_at < new Date();
+  }
+
+  public isValid(): boolean {
+    return !this.verified_at && !this.isExpired();
   }
 }

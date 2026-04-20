@@ -1,5 +1,6 @@
-import Server from '@/presentation/server';
 import { ENV } from '@/config/index';
+import Server from '@/presentation/server';
+
 import prismadb from './infraestructure/prismadb';
 import AppRoutes from './presentation/routes';
 
@@ -8,15 +9,11 @@ async function main() {
   await server.start();
 }
 
-// Graceful shutdown handling
-(async () => {
-  try {
-    await main();
-  } catch (error) {
-    console.error('Error during server startup:', error);
-    process.exit(1);
-  }
-})();
+main().catch((error: unknown) => {
+  const err = error as Error;
+  console.error('Error during server startup:', err.message);
+  process.exit(1);
+});
 
 // Disconnect Prisma on process termination
 const shutdown = async () => {
@@ -29,6 +26,10 @@ const shutdown = async () => {
     process.exit(0);
   }
 };
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
-process.on('exit', shutdown);
+process.on('SIGINT', () => {
+  void shutdown();
+});
+
+process.on('SIGTERM', () => {
+  void shutdown();
+});

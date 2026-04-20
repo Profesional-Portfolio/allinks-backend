@@ -1,14 +1,14 @@
 import { Exception } from '@/domain/exceptions';
 
-export interface TokenPayload {
-  id: string;
-  email: string;
-  [key: string]: unknown;
-}
-
 export interface TokenPair {
   accessToken: string;
   refreshToken: string;
+}
+
+export interface TokenPayload {
+  [key: string]: unknown;
+  email: string;
+  id: string;
 }
 
 export interface TokenProvider {

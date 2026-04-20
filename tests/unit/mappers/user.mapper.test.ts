@@ -3,19 +3,19 @@ import { UserMapper } from '../../../src/infraestructure/mappers/user.mapper';
 
 describe('UserMapper', () => {
   const mockUserData = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    email: 'test@example.com',
-    username: 'testuser',
-    first_name: 'John',
-    last_name: 'Doe',
-    bio: 'Test bio',
     avatar_url: 'https://example.com/avatar.jpg',
-    is_active: true,
-    email_verified: true,
-    password_hash: 'hashedPassword123',
+    bio: 'Test bio',
     created_at: new Date('2024-01-01T00:00:00.000Z'),
-    updated_at: new Date('2024-01-02T00:00:00.000Z'),
+    email: 'test@example.com',
+    email_verified: true,
+    first_name: 'John',
+    id: '123e4567-e89b-12d3-a456-426614174000',
+    is_active: true,
     last_login_at: new Date('2024-01-03T00:00:00.000Z'),
+    last_name: 'Doe',
+    password_hash: 'hashedPassword123',
+    updated_at: new Date('2024-01-02T00:00:00.000Z'),
+    username: 'testuser',
   };
 
   describe('toEntity', () => {

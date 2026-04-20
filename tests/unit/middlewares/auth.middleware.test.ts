@@ -1,10 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
-import { AuthMiddleware } from '@/presentation/middlewares/auth.middleware';
-import { TokenProvider } from '@/domain/interfaces';
-import { CacheService } from '@/infraestructure/services/cache.service';
+import { NextFunction, Request, Response } from 'express';
+import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
+
 import { StatusCode } from '@/domain/enums';
+import { TokenPayload, TokenProvider } from '@/domain/interfaces';
+import { CacheService } from '@/infraestructure/services/cache.service';
 import { COOKIE_NAMES } from '@/infraestructure/utils';
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
+import { AuthMiddleware } from '@/presentation/middlewares/auth.middleware';
 
 describe('AuthMiddleware Unit Tests', () => {
   let authMiddleware: AuthMiddleware;
@@ -12,7 +13,7 @@ describe('AuthMiddleware Unit Tests', () => {
   let mockCacheService: DeepMockProxy<CacheService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
-  let nextFunction: NextFunction = jest.fn();
+  const nextFunction: NextFunction = jest.fn();
 
   beforeEach(() => {
     mockTokenProvider = mockDeep<TokenProvider>();
@@ -24,17 +25,21 @@ describe('AuthMiddleware Unit Tests', () => {
       headers: {},
     };
     mockResponse = {
-      status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
+      status: jest.fn().mockReturnThis(),
     };
     (nextFunction as jest.Mock).mockClear();
   });
 
   describe('authenticate', () => {
     it('should authenticate successfully with a valid cookie', async () => {
-      const payload = { id: 'user-123', email: 'test@test.com', role: 'USER' };
+      const payload = { email: 'test@test.com', id: 'user-123', role: 'USER' };
       mockRequest.cookies![COOKIE_NAMES.ACCESS_TOKEN] = 'valid-token';
-      mockTokenProvider.verifyAccessToken.mockResolvedValue([undefined, payload as any]);
+      
+      mockTokenProvider.verifyAccessToken.mockResolvedValue([
+        undefined,
+        payload as any,
+      ]);
       mockCacheService.getRefreshToken.mockResolvedValue('refresh-token');
 
       await authMiddleware.authenticate(
@@ -43,16 +48,21 @@ describe('AuthMiddleware Unit Tests', () => {
         nextFunction
       );
 
-      expect(mockTokenProvider.verifyAccessToken).toHaveBeenCalledWith('valid-token');
+      expect(mockTokenProvider.verifyAccessToken).toHaveBeenCalledWith(
+        'valid-token'
+      );
       expect(mockCacheService.getRefreshToken).toHaveBeenCalledWith('user-123');
       expect(mockRequest.user).toEqual(payload);
       expect(nextFunction).toHaveBeenCalled();
     });
 
     it('should authenticate successfully with a valid Authorization header', async () => {
-      const payload = { id: 'user-123', email: 'test@test.com', role: 'USER' };
+      const payload = { email: 'test@test.com', id: 'user-123', role: 'USER' };
       mockRequest.headers!.authorization = 'Bearer valid-header-token';
-      mockTokenProvider.verifyAccessToken.mockResolvedValue([undefined, payload as any]);
+      mockTokenProvider.verifyAccessToken.mockResolvedValue([
+        undefined,
+        payload as any,
+      ]);
       mockCacheService.getRefreshToken.mockResolvedValue('refresh-token');
 
       await authMiddleware.authenticate(
@@ -61,7 +71,9 @@ describe('AuthMiddleware Unit Tests', () => {
         nextFunction
       );
 
-      expect(mockTokenProvider.verifyAccessToken).toHaveBeenCalledWith('valid-header-token');
+      expect(mockTokenProvider.verifyAccessToken).toHaveBeenCalledWith(
+        'valid-header-token'
+      );
       expect(nextFunction).toHaveBeenCalled();
     });
 
@@ -74,14 +86,21 @@ describe('AuthMiddleware Unit Tests', () => {
 
       expect(mockResponse.status).toHaveBeenCalledWith(StatusCode.UNAUTHORIZED);
       expect(mockResponse.json).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'error', message: 'No token provided' })
+        expect.objectContaining({
+          message: 'No token provided',
+          status: 'error',
+        })
       );
       expect(nextFunction).not.toHaveBeenCalled();
     });
 
     it('should return 401 if token verification fails', async () => {
       mockRequest.cookies![COOKIE_NAMES.ACCESS_TOKEN] = 'invalid-token';
-      mockTokenProvider.verifyAccessToken.mockResolvedValue([{ message: 'Invalid token', statusCode: 401 } as any, undefined as any]);
+
+      mockTokenProvider.verifyAccessToken.mockResolvedValue([
+        { message: 'Invalid token', statusCode: 401 } as any,
+        undefined as any,
+      ]);
 
       await authMiddleware.authenticate(
         mockRequest as Request,
@@ -94,9 +113,12 @@ describe('AuthMiddleware Unit Tests', () => {
     });
 
     it('should return 401 if session (refresh token) is not found in cache', async () => {
-      const payload = { id: 'user-123', email: 'test@test.com' };
+      const payload = { email: 'test@test.com', id: 'user-123' };
       mockRequest.cookies![COOKIE_NAMES.ACCESS_TOKEN] = 'valid-token';
-      mockTokenProvider.verifyAccessToken.mockResolvedValue([undefined, payload as any]);
+      mockTokenProvider.verifyAccessToken.mockResolvedValue([
+        undefined,
+        payload as any,
+      ]);
       mockCacheService.getRefreshToken.mockResolvedValue(null);
 
       await authMiddleware.authenticate(
@@ -114,9 +136,12 @@ describe('AuthMiddleware Unit Tests', () => {
 
   describe('optionalAuthenticate', () => {
     it('should set req.user if a valid token is provided', async () => {
-      const payload = { id: 'user-123', email: 'test@test.com' };
+      const payload = { email: 'test@test.com', id: 'user-123' };
       mockRequest.cookies![COOKIE_NAMES.ACCESS_TOKEN] = 'valid-token';
-      mockTokenProvider.verifyAccessToken.mockResolvedValue([undefined, payload as any]);
+      mockTokenProvider.verifyAccessToken.mockResolvedValue([
+        undefined,
+        payload as any,
+      ]);
       mockCacheService.getRefreshToken.mockResolvedValue('some-refresh-token');
 
       await authMiddleware.optionalAuthenticate(
@@ -142,7 +167,10 @@ describe('AuthMiddleware Unit Tests', () => {
 
     it('should NOT set req.user and call next if token is invalid', async () => {
       mockRequest.cookies![COOKIE_NAMES.ACCESS_TOKEN] = 'invalid-token';
-      mockTokenProvider.verifyAccessToken.mockResolvedValue([{ message: 'err' } as any, undefined as any]);
+      mockTokenProvider.verifyAccessToken.mockResolvedValue([
+        { message: 'err' } as any,
+        {} as TokenPayload,
+      ]);
 
       await authMiddleware.optionalAuthenticate(
         mockRequest as Request,

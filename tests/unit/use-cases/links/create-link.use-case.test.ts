@@ -1,8 +1,14 @@
-import { CreateLinkUseCase } from '@/domain/use-cases/links/create-link.use-case';
 import { CreateLinkDto } from '@/domain/dtos';
 import { LinkEntity } from '@/domain/entities';
-import { mockLinksRepository, mockUsersRepository, mockCacheService, mockUserWithoutPassword } from '../../../__mocks__';
 import { Platforms } from '@/domain/enums';
+import { CreateLinkUseCase } from '@/domain/use-cases/links/create-link.use-case';
+
+import {
+  mockCacheService,
+  mockLinksRepository,
+  mockUsersRepository,
+  mockUserWithoutPassword,
+} from '../../../__mocks__';
 
 describe('CreateLinkUseCase', () => {
   let createLinkUseCase: CreateLinkUseCase;
@@ -17,35 +23,40 @@ describe('CreateLinkUseCase', () => {
   });
 
   const payload: CreateLinkDto = {
-    platform: Platforms.GITHUB,
-    url: 'https://github.com/test',
-    title: 'Github',
-    user_id: 'user-123',
     is_active: true,
+    platform: Platforms.GITHUB,
+    title: 'Github',
+    url: 'https://github.com/test',
+    user_id: 'user-123',
   };
 
   const mockLink: LinkEntity = {
-    id: 'link-123',
-    user_id: payload.user_id,
-    platform: payload.platform as string,
-    url: payload.url,
-    title: payload.title,
-    is_active: payload.is_active,
-    display_order: 1,
     created_at: new Date(),
+    display_order: 1,
+    id: 'link-123',
+    is_active: payload.is_active,
+    platform: payload.platform as string,
+    title: payload.title,
     updated_at: new Date(),
+    url: payload.url,
+    user_id: payload.user_id,
   };
 
   it('should create a link and invalidate cache successfully', async () => {
     mockLinksRepository.createLink.mockResolvedValue([undefined, mockLink]);
-    mockUsersRepository.findUserById.mockResolvedValue([undefined, mockUserWithoutPassword]);
+    mockUsersRepository.findUserById.mockResolvedValue([
+      undefined,
+      mockUserWithoutPassword,
+    ]);
 
     const [error, result] = await createLinkUseCase.execute(payload);
 
     expect(error).toBeUndefined();
     expect(result).toEqual(mockLink);
     expect(mockLinksRepository.createLink).toHaveBeenCalledWith(payload);
-    expect(mockUsersRepository.findUserById).toHaveBeenCalledWith(payload.user_id);
+    expect(mockUsersRepository.findUserById).toHaveBeenCalledWith(
+      payload.user_id
+    );
     expect(mockCacheService.invalidateLinks).toHaveBeenCalledWith(
       mockUserWithoutPassword.id,
       mockUserWithoutPassword.username
@@ -65,7 +76,10 @@ describe('CreateLinkUseCase', () => {
 
   it('should create link but not invalidate cache if user not found', async () => {
     mockLinksRepository.createLink.mockResolvedValue([undefined, mockLink]);
-    mockUsersRepository.findUserById.mockResolvedValue([{ message: 'User not found' } as any, null]);
+    mockUsersRepository.findUserById.mockResolvedValue([
+      { message: 'User not found' } as any,
+      null,
+    ]);
 
     const [error, result] = await createLinkUseCase.execute(payload);
 

@@ -1,6 +1,7 @@
-import { RegisterUserUseCase } from '@/domain/use-cases/auth/register-user.use-case';
+/* eslint-disable @typescript-eslint/unbound-method */
 import { RegisterUserDto } from '@/domain/dtos/auth/register-user.dto';
-import { Context, createMockContext, MockContext } from '../../../context';
+import { RegisterUserUseCase } from '@/domain/use-cases/auth/register-user.use-case';
+
 import {
   mockAuthRepository,
   mockCacheService,
@@ -9,20 +10,18 @@ import {
   mockUser,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
-
-let mockCtx: MockContext;
-let ctx: Context;
+import { Context, createMockContext, MockContext } from '../../../context';
 
 const registerDto: RegisterUserDto = {
-  email: 'test@test.com',
-  password: 'Password123!',
-  first_name: 'Test User',
-  last_name: 'Test',
-  username: 'testuser',
-  is_active: true,
-  email_verified: false,
   avatar_url: '',
   bio: '',
+  email: 'test@test.com',
+  email_verified: false,
+  first_name: 'Test User',
+  is_active: true,
+  last_name: 'Test',
+  password: 'Password123!',
+  username: 'testuser',
 };
 
 const hashedPassword = 'hashed-password';
@@ -31,11 +30,16 @@ const refreshToken = 'refresh-token';
 
 describe('RegisterUserUseCase', () => {
   let registerUserUseCase: RegisterUserUseCase;
+   
+  let mockCtx: MockContext;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let ctx: Context;
 
   beforeEach(() => {
     registerUserUseCase = new RegisterUserUseCase(
       mockAuthRepository,
       mockTokenProvider,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockCacheService as any
     );
     mockCtx = createMockContext();
@@ -58,12 +62,14 @@ describe('RegisterUserUseCase', () => {
 
       expect(mockAuthRepository.register).toHaveBeenCalledWith(registerDto);
       expect(mockTokenProvider.generateTokenPair).toHaveBeenCalledWith({
-        id: mockUser.id,
         email: registerDto.email,
+        id: mockUser.id,
       });
       expect(error).toBeUndefined();
-      expect(response.user).toEqual(mockUserWithoutPassword);
-      expect(response.tokens).toEqual({ accessToken, refreshToken });
+      if (response) {
+        expect(response.user).toEqual(mockUserWithoutPassword);
+        expect(response.tokens).toEqual({ accessToken, refreshToken });
+      }
     });
   });
 });

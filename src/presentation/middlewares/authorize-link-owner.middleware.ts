@@ -1,11 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import { LinksRepository } from '@/domain/repositories';
+import { NextFunction, Request, Response } from 'express';
+
 import { StatusCode } from '@/domain/enums';
+import { LinksRepository } from '@/domain/repositories';
 
 export class AuthorizeLinkOwnerMiddleware {
   constructor(private readonly linksRepository: LinksRepository) {}
 
-  authorize = async (req: Request, res: any, next: any) => {
+  authorize = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const linkId = req.params.id as string;
       const userId = req.user?.id;

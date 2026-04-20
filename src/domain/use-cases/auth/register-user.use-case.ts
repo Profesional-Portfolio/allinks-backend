@@ -1,13 +1,14 @@
-import { AuthRepository } from '../../repositories';
-import { RegisterUserDto } from '../../dtos';
-import { TokenProvider, TokenPair } from '../../interfaces';
-import { Exception } from '@/domain/exceptions';
 import { UserWithoutPassword } from '@/domain/entities';
+import { Exception } from '@/domain/exceptions';
 import { CacheService } from '@/infraestructure/services/cache.service';
 
+import { RegisterUserDto } from '../../dtos';
+import { TokenPair, TokenProvider } from '../../interfaces';
+import { AuthRepository } from '../../repositories';
+
 interface RegisterUserResponse {
-  user: UserWithoutPassword;
   tokens: TokenPair;
+  user: UserWithoutPassword;
 }
 
 export class RegisterUserUseCase {
@@ -27,8 +28,8 @@ export class RegisterUserUseCase {
     }
 
     const [err, tokens] = await this.tokenProvider.generateTokenPair({
-      id: user.id,
       email: user.email,
+      id: user.id,
     });
 
     if (err) {
@@ -41,8 +42,8 @@ export class RegisterUserUseCase {
     return [
       undefined,
       {
-        user,
         tokens,
+        user,
       },
     ];
   }

@@ -1,5 +1,5 @@
-import { CacheService } from '@/infraestructure/services/cache.service';
 import { Exception } from '@/domain/exceptions';
+import { CacheService } from '@/infraestructure/services/cache.service';
 
 export class LogoutUserUseCase {
   constructor(private readonly cacheService: CacheService) {}
@@ -8,7 +8,7 @@ export class LogoutUserUseCase {
     try {
       await this.cacheService.deleteRefreshToken(userId);
       return [undefined, 'Logged out successfully'];
-    } catch (error) {
+    } catch {
       const exception = new Exception('Error during logout', 500);
       return [exception, ''];
     }

@@ -1,10 +1,10 @@
-import { AuthDatasourceImpl } from '../../../src/infraestructure/datasources/auth.datasource.impl';
-import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import { PasswordHasher } from '@/domain/interfaces';
-import { prismaMock } from '../../setup-unit';
 import { BcryptPasswordHasherAdapter } from '@/infraestructure/adapters';
+
+import { AuthDatasourceImpl } from '../../../src/infraestructure/datasources/auth.datasource.impl';
 import { mockUser } from '../../__mocks__';
 import { validRegisterPayload } from '../../payloads';
+import { prismaMock } from '../../setup-unit';
 
 describe('AuthDatasource Integration Tests', () => {
   let authDatasource: AuthDatasourceImpl;
@@ -31,8 +31,8 @@ describe('AuthDatasource Integration Tests', () => {
     it('should properly map Prisma errors', async () => {
       const prismaError = {
         code: 'P2002',
-        meta: { target: ['email'] },
         message: 'Unique constraint violation',
+        meta: { target: ['email'] },
       };
 
       prismaMock.user.create.mockRejectedValue(prismaError);
@@ -48,7 +48,7 @@ describe('AuthDatasource Integration Tests', () => {
 
   describe('Query Optimization', () => {
     it('should use proper select fields to avoid overfetching', async () => {
-      prismaMock.user.findUnique.mockResolvedValue(mockUser);
+      prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
 
       await authDatasource.findUserByEmail('test@test.com');
 

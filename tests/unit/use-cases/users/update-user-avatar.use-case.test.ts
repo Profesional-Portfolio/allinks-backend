@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { UpdateUserAvatarUseCase } from '@/domain/use-cases/users/update-user-avatar.use-case';
+
 import {
-  mockUsersRepository,
   mockCacheService,
+  mockUsersRepository,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
 
@@ -12,6 +14,7 @@ describe('UpdateUserAvatarUseCase', () => {
     jest.clearAllMocks();
     updateUserAvatarUseCase = new UpdateUserAvatarUseCase(
       mockUsersRepository,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockCacheService as any
     );
   });
@@ -21,13 +24,22 @@ describe('UpdateUserAvatarUseCase', () => {
   describe('execute', () => {
     it('should update avatar and invalidate cache successfully', async () => {
       const updatedUser = { ...mockUserWithoutPassword, avatar_url: avatarUrl };
-      mockUsersRepository.updateAvatarUser.mockResolvedValue([undefined, updatedUser]);
+      mockUsersRepository.updateAvatarUser.mockResolvedValue([
+        undefined,
+        updatedUser,
+      ]);
 
-      const [error, result] = await updateUserAvatarUseCase.execute('user-123', avatarUrl);
+      const [error, result] = await updateUserAvatarUseCase.execute(
+        'user-123',
+        avatarUrl
+      );
 
       expect(error).toBeNull();
       expect(result).toBe(avatarUrl);
-      expect(mockUsersRepository.updateAvatarUser).toHaveBeenCalledWith('user-123', avatarUrl);
+      expect(mockUsersRepository.updateAvatarUser).toHaveBeenCalledWith(
+        'user-123',
+        avatarUrl
+      );
       expect(mockCacheService.invalidateProfile).toHaveBeenCalledWith(
         updatedUser.id,
         updatedUser.username
@@ -36,9 +48,16 @@ describe('UpdateUserAvatarUseCase', () => {
 
     it('should return error if update fails', async () => {
       const mockError = { message: 'Upload failed', statusCode: 400 };
-      mockUsersRepository.updateAvatarUser.mockResolvedValue([mockError as any, null]);
+      mockUsersRepository.updateAvatarUser.mockResolvedValue([
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        mockError as any,
+        null,
+      ]);
 
-      const [error, result] = await updateUserAvatarUseCase.execute('user-123', avatarUrl);
+      const [error, result] = await updateUserAvatarUseCase.execute(
+        'user-123',
+        avatarUrl
+      );
 
       expect(error).toEqual(mockError);
       expect(result).toBeNull();

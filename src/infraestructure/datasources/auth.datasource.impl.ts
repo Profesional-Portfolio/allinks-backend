@@ -1,4 +1,10 @@
 import {
+  BadRequestException,
+  Exception,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@/domain/exceptions';
+import {
   AuthDatasource,
   EmailVerificationTokenEntity,
   LoginUserDto,
@@ -7,14 +13,9 @@ import {
   UserWithoutPassword,
 } from '@/domain/index';
 import { PasswordHasher } from '@/domain/interfaces';
-import { UserMapper } from '../mappers';
-import {
-  Exception,
-  InternalServerErrorException,
-  BadRequestException,
-  UnauthorizedException,
-} from '@/domain/exceptions';
 import { PrismaClient } from '@/prisma/client';
+
+import { UserMapper } from '../mappers';
 
 export class AuthDatasourceImpl implements AuthDatasource {
   constructor(
@@ -22,9 +23,102 @@ export class AuthDatasourceImpl implements AuthDatasource {
     private readonly prismadb: PrismaClient
   ) {}
 
+  async createEmailVerificationToken(
+    userId: UserWithoutPassword['id'],
+    token: string,
+    expires_at: Date
+  ): Promise<[Exception | undefined, EmailVerificationTokenEntity | null]> {
+    const emailVerificationToken =
+      await this.prismadb.emailVerificationToken.create({
+        data: {
+          expires_at,
+          token,
+          user_id: userId,
+        },
+      });
+
+    return [
+      undefined,
+      EmailVerificationTokenEntity.fromObject(emailVerificationToken),
+    ];
+  }
+
+  async createPasswordResetToken(
+    userId: UserWithoutPassword['id'],
+    token: string,
+    expires_at: Date
+  ): Promise<[Exception | undefined, null | PasswordResetTokenEntity]> {
+    const passwordResetToken = await this.prismadb.passwordResetToken.create({
+      data: {
+        expires_at: expires_at,
+        token,
+        user_id: userId,
+      },
+    });
+    return [undefined, PasswordResetTokenEntity.fromObject(passwordResetToken)];
+  }
+
+  async deleteUserEmailVerificationTokens(
+    userId: UserWithoutPassword['id']
+  ): Promise<[Exception | undefined, null | string]> {
+    await this.prismadb.emailVerificationToken.deleteMany({
+      where: {
+        user_id: userId,
+      },
+    });
+    return [undefined, 'Email verification tokens deleted'];
+  }
+
+  async deleteUserPasswordResetTokens(
+    userId: UserWithoutPassword['id']
+  ): Promise<[Exception | undefined, null | string]> {
+    await this.prismadb.passwordResetToken.deleteMany({
+      where: {
+        user_id: userId,
+      },
+    });
+
+    return [undefined, 'Password reset tokens deleted'];
+  }
+
+  async findEmailVerificationToken(
+    token: string
+  ): Promise<[Exception | undefined, EmailVerificationTokenEntity | null]> {
+    const emailVerificationToken =
+      await this.prismadb.emailVerificationToken.findUnique({
+        where: {
+          token,
+        },
+      });
+
+    return [
+      undefined,
+      emailVerificationToken
+        ? EmailVerificationTokenEntity.fromObject(emailVerificationToken)
+        : null,
+    ];
+  }
+
+  async findPasswordResetToken(
+    token: string
+  ): Promise<[Exception | undefined, null | PasswordResetTokenEntity]> {
+    const passwordResetToken =
+      await this.prismadb.passwordResetToken.findUnique({
+        where: {
+          token,
+        },
+      });
+    return [
+      undefined,
+      passwordResetToken
+        ? PasswordResetTokenEntity.fromObject(passwordResetToken)
+        : null,
+    ];
+  }
+
   async findUserByEmail(
     email: string
-  ): Promise<[Exception | undefined, UserWithoutPassword | null]> {
+  ): Promise<[Exception | undefined, null | UserWithoutPassword]> {
     try {
       const user = await this.prismadb.user.findUnique({
         where: {
@@ -40,7 +134,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
       const mappedUser = UserMapper.toEntity(user, true);
 
       return [undefined, mappedUser];
-    } catch (error) {
+    } catch {
       const err = new InternalServerErrorException();
       return [err, null];
     }
@@ -48,7 +142,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
 
   async findUserById(
     id: string
-  ): Promise<[Exception | undefined, UserWithoutPassword | null]> {
+  ): Promise<[Exception | undefined, null | UserWithoutPassword]> {
     try {
       const user = await this.prismadb.user.findUnique({
         where: {
@@ -64,65 +158,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
       const mappedUser = UserMapper.toEntity(user, true);
 
       return [undefined, mappedUser];
-    } catch (error) {
-      const err = new InternalServerErrorException();
-      return [err, null];
-    }
-  }
-
-  async updateLastLogin(
-    id: UserWithoutPassword['id']
-  ): Promise<[Exception | undefined, string | undefined]> {
-    try {
-      const user = await this.prismadb.user.update({
-        where: {
-          id,
-        },
-        data: {
-          last_login_at: new Date(),
-        },
-      });
-      if (!user) {
-        const err = new UnauthorizedException('Invalid credentials');
-        return [err, undefined];
-      }
-      return [undefined, 'Last login updated'];
-    } catch (error) {
-      // throw error;
-      const err = new InternalServerErrorException();
-      return [err, undefined];
-    }
-  }
-
-  async register(
-    payload: RegisterUserDto
-  ): Promise<[Exception | undefined, UserWithoutPassword | null]> {
-    try {
-      const userExists = await this.prismadb.user.findUnique({
-        where: {
-          email: payload.email,
-        },
-      });
-
-      if (userExists) {
-        const err = new BadRequestException('User already exists');
-        return [err, null];
-      }
-
-      const { password, ...payloadWithoutPassword } = payload;
-
-      const user = await this.prismadb.user.create({
-        data: {
-          ...payloadWithoutPassword,
-          password_hash: await this.passwordHasher.hash(password),
-        },
-      });
-
-      const mappedUser = UserMapper.toEntity(user, true);
-
-      return [undefined, mappedUser];
-    } catch (error) {
-      console.log('Error registering user: ', error);
+    } catch {
       const err = new InternalServerErrorException();
       return [err, null];
     }
@@ -130,7 +166,7 @@ export class AuthDatasourceImpl implements AuthDatasource {
 
   async login(
     payload: LoginUserDto
-  ): Promise<[Exception | undefined, UserWithoutPassword | null]> {
+  ): Promise<[Exception | undefined, null | UserWithoutPassword]> {
     try {
       const user = await this.prismadb.user.findUnique({
         where: {
@@ -164,15 +200,63 @@ export class AuthDatasourceImpl implements AuthDatasource {
       }
 
       await this.prismadb.user.update({
-        where: { id: user.id },
         data: { last_login_at: new Date() },
+        where: { id: user.id },
       });
 
       return [undefined, UserMapper.toEntity(user, true)];
-    } catch (error) {
+    } catch {
       const err = new InternalServerErrorException();
       return [err, null];
     }
+  }
+
+  async register(
+    payload: RegisterUserDto
+  ): Promise<[Exception | undefined, null | UserWithoutPassword]> {
+    try {
+      const userExists = await this.prismadb.user.findUnique({
+        where: {
+          email: payload.email,
+        },
+      });
+
+      if (userExists) {
+        const err = new BadRequestException('User already exists');
+        return [err, null];
+      }
+
+      const { password, ...payloadWithoutPassword } = payload;
+
+      const user = await this.prismadb.user.create({
+        data: {
+          ...payloadWithoutPassword,
+          password_hash: await this.passwordHasher.hash(password),
+        },
+      });
+
+      const mappedUser = UserMapper.toEntity(user, true);
+
+      return [undefined, mappedUser];
+    } catch (error) {
+      console.log('Error registering user: ', error);
+      const err = new InternalServerErrorException();
+      return [err, null];
+    }
+  }
+
+  async updateEmailVerificationTokenVerifiedDate(
+    tokenId: EmailVerificationTokenEntity['id']
+  ): Promise<[Exception | undefined, null | string]> {
+    await this.prismadb.emailVerificationToken.update({
+      data: {
+        verified_at: new Date(),
+      },
+      where: {
+        id: tokenId,
+      },
+    });
+    return [undefined, 'Email verification token used'];
   }
 
   async updateEmailVerified(
@@ -180,150 +264,67 @@ export class AuthDatasourceImpl implements AuthDatasource {
     verified: boolean
   ): Promise<[Exception | undefined, string]> {
     await this.prismadb.user.update({
-      where: {
-        id: userId,
-      },
       data: {
         email_verified: verified,
+      },
+      where: {
+        id: userId,
       },
     });
 
     return [undefined, 'Email verified'];
   }
 
-  async createEmailVerificationToken(
-    userId: UserWithoutPassword['id'],
-    token: string,
-    expires_at: Date
-  ): Promise<[Exception | undefined, EmailVerificationTokenEntity | null]> {
-    const emailVerificationToken =
-      await this.prismadb.emailVerificationToken.create({
+  async updateLastLogin(
+    id: UserWithoutPassword['id']
+  ): Promise<[Exception | undefined, string | undefined]> {
+    try {
+      const user = await this.prismadb.user.update({
         data: {
-          user_id: userId,
-          token,
-          expires_at,
+          last_login_at: new Date(),
         },
-      });
-
-    return [
-      undefined,
-      EmailVerificationTokenEntity.fromObject(emailVerificationToken),
-    ];
-  }
-
-  async findEmailVerificationToken(
-    token: string
-  ): Promise<[Exception | undefined, EmailVerificationTokenEntity | null]> {
-    const emailVerificationToken =
-      await this.prismadb.emailVerificationToken.findUnique({
         where: {
-          token,
+          id,
         },
       });
-
-    return [
-      undefined,
-      emailVerificationToken
-        ? EmailVerificationTokenEntity.fromObject(emailVerificationToken)
-        : null,
-    ];
-  }
-
-  async updateEmailVerificationTokenVerifiedDate(
-    tokenId: EmailVerificationTokenEntity['id']
-  ): Promise<[Exception | undefined, string | null]> {
-    await this.prismadb.emailVerificationToken.update({
-      where: {
-        id: tokenId,
-      },
-      data: {
-        verified_at: new Date(),
-      },
-    });
-    return [undefined, 'Email verification token used'];
-  }
-
-  async deleteUserEmailVerificationTokens(
-    userId: UserWithoutPassword['id']
-  ): Promise<[Exception | undefined, string | null]> {
-    await this.prismadb.emailVerificationToken.deleteMany({
-      where: {
-        user_id: userId,
-      },
-    });
-    return [undefined, 'Email verification tokens deleted'];
-  }
-
-  async createPasswordResetToken(
-    userId: UserWithoutPassword['id'],
-    token: string,
-    expires_at: Date
-  ): Promise<[Exception | undefined, PasswordResetTokenEntity | null]> {
-    const passwordResetToken = await this.prismadb.passwordResetToken.create({
-      data: {
-        user_id: userId,
-        token,
-        expires_at: expires_at,
-      },
-    });
-    return [undefined, PasswordResetTokenEntity.fromObject(passwordResetToken)];
-  }
-
-  async findPasswordResetToken(
-    token: string
-  ): Promise<[Exception | undefined, PasswordResetTokenEntity | null]> {
-    const passwordResetToken =
-      await this.prismadb.passwordResetToken.findUnique({
-        where: {
-          token,
-        },
-      });
-    return [
-      undefined,
-      passwordResetToken
-        ? PasswordResetTokenEntity.fromObject(passwordResetToken)
-        : null,
-    ];
-  }
-
-  async updatePasswordResetTokenUsedDate(
-    tokenId: PasswordResetTokenEntity['id']
-  ): Promise<[Exception | undefined, string | null]> {
-    await this.prismadb.passwordResetToken.update({
-      where: {
-        id: tokenId,
-      },
-      data: {
-        used_at: new Date(),
-      },
-    });
-    return [undefined, 'Password reset token used'];
-  }
-
-  async deleteUserPasswordResetTokens(
-    userId: UserWithoutPassword['id']
-  ): Promise<[Exception | undefined, string | null]> {
-    await this.prismadb.passwordResetToken.deleteMany({
-      where: {
-        user_id: userId,
-      },
-    });
-
-    return [undefined, 'Password reset tokens deleted'];
+      if (!user.id) {
+        const err = new UnauthorizedException('Invalid credentials');
+        return [err, undefined];
+      }
+      return [undefined, 'Last login updated'];
+    } catch {
+      // throw error;
+      const err = new InternalServerErrorException();
+      return [err, undefined];
+    }
   }
 
   async updatePassword(
     userId: string,
     hashedPassword: string
-  ): Promise<[Exception | undefined, string | null]> {
+  ): Promise<[Exception | undefined, null | string]> {
     await this.prismadb.user.update({
-      where: {
-        id: userId,
-      },
       data: {
         password_hash: hashedPassword,
       },
+      where: {
+        id: userId,
+      },
     });
     return [undefined, 'Password updated'];
+  }
+
+  async updatePasswordResetTokenUsedDate(
+    tokenId: PasswordResetTokenEntity['id']
+  ): Promise<[Exception | undefined, null | string]> {
+    await this.prismadb.passwordResetToken.update({
+      data: {
+        used_at: new Date(),
+      },
+      where: {
+        id: tokenId,
+      },
+    });
+    return [undefined, 'Password reset token used'];
   }
 }

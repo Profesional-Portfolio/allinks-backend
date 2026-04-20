@@ -39,7 +39,7 @@ jobs:
 
       - name: Generate Prisma client
         env:
-          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          DATABASE_URL: 'postgresql://dummy:dummy@localhost:5432/dummy'
         run: pnpm dlx prisma generate
 
       - name: Lint

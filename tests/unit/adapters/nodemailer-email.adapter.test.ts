@@ -1,18 +1,21 @@
-import { NodemailerEmailAdapter } from '../../../src/infraestructure/adapters/nodemailer-email.adapter';
 import nodemailer, { Transporter } from 'nodemailer';
+
 import type { SendEmailOptions } from '@/domain/interfaces/';
+
 import { ENV } from '@/config/env';
+
+import { NodemailerEmailAdapter } from '../../../src/infraestructure/adapters/nodemailer-email.adapter';
 
 jest.mock('nodemailer');
 jest.mock('@/config/env', () => ({
   ENV: {
+    SMTP_FROM_EMAIL: 'noreply@allinks.com',
+    SMTP_FROM_NAME: 'Allinks',
     SMTP_HOST: 'smtp.test.com',
+    SMTP_PASSWORD: 'testpassword',
     SMTP_PORT: '587',
     SMTP_SECURE: 'false',
     SMTP_USER: 'test@example.com',
-    SMTP_PASSWORD: 'testpassword',
-    SMTP_FROM_EMAIL: 'noreply@allinks.com',
-    SMTP_FROM_NAME: 'Allinks',
   },
 }));
 
@@ -36,13 +39,13 @@ describe('NodemailerEmailAdapter', () => {
   describe('constructor', () => {
     it('should create transporter with correct configuration', () => {
       expect(nodemailer.createTransport).toHaveBeenCalledWith({
+        auth: {
+          pass: ENV.SMTP_PASSWORD,
+          user: ENV.SMTP_USER,
+        },
         host: ENV.SMTP_HOST,
         port: parseInt(ENV.SMTP_PORT, 10),
         secure: false,
-        auth: {
-          user: ENV.SMTP_USER,
-          pass: ENV.SMTP_PASSWORD,
-        },
       });
     });
 
@@ -98,10 +101,10 @@ describe('NodemailerEmailAdapter', () => {
 
   describe('sendEmail', () => {
     const mockEmailOptions: SendEmailOptions = {
-      to: 'recipient@example.com',
-      subject: 'Test Subject',
       html: '<h1>Test Email</h1>',
+      subject: 'Test Subject',
       text: 'Test Email',
+      to: 'recipient@example.com',
     };
 
     it('should send email successfully and return true', async () => {
@@ -113,19 +116,19 @@ describe('NodemailerEmailAdapter', () => {
 
       expect(mockTransporter.sendMail).toHaveBeenCalledWith({
         from: `"${ENV.SMTP_FROM_NAME}" <${ENV.SMTP_FROM_EMAIL}>`,
-        to: mockEmailOptions.to,
-        subject: mockEmailOptions.subject,
         html: mockEmailOptions.html,
+        subject: mockEmailOptions.subject,
         text: mockEmailOptions.text,
+        to: mockEmailOptions.to,
       });
       expect(result).toBe(true);
     });
 
     it('should send email without text field', async () => {
       const emailOptionsWithoutText: SendEmailOptions = {
-        to: 'recipient@example.com',
-        subject: 'Test Subject',
         html: '<h1>Test Email</h1>',
+        subject: 'Test Subject',
+        to: 'recipient@example.com',
       };
 
       mockTransporter.sendMail.mockResolvedValue({
@@ -136,10 +139,10 @@ describe('NodemailerEmailAdapter', () => {
 
       expect(mockTransporter.sendMail).toHaveBeenCalledWith({
         from: `"${ENV.SMTP_FROM_NAME}" <${ENV.SMTP_FROM_EMAIL}>`,
-        to: emailOptionsWithoutText.to,
-        subject: emailOptionsWithoutText.subject,
         html: emailOptionsWithoutText.html,
+        subject: emailOptionsWithoutText.subject,
         text: undefined,
+        to: emailOptionsWithoutText.to,
       });
       expect(result).toBe(true);
     });
@@ -147,7 +150,9 @@ describe('NodemailerEmailAdapter', () => {
     it('should return false when sending email fails', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
 
       mockTransporter.sendMail.mockRejectedValue(
         new Error('SMTP connection failed')
@@ -166,9 +171,9 @@ describe('NodemailerEmailAdapter', () => {
 
     it('should handle multiple recipients', async () => {
       const multipleRecipientsOptions: SendEmailOptions = {
-        to: 'user1@example.com, user2@example.com',
-        subject: 'Test Subject',
         html: '<h1>Test Email</h1>',
+        subject: 'Test Subject',
+        to: 'user1@example.com, user2@example.com',
       };
 
       mockTransporter.sendMail.mockResolvedValue({
@@ -187,9 +192,9 @@ describe('NodemailerEmailAdapter', () => {
 
     it('should handle special characters in subject', async () => {
       const specialSubjectOptions: SendEmailOptions = {
-        to: 'recipient@example.com',
-        subject: 'Test Subject with émojis 🎉 and spëcial chars',
         html: '<h1>Test Email</h1>',
+        subject: 'Test Subject with émojis 🎉 and spëcial chars',
+        to: 'recipient@example.com',
       };
 
       mockTransporter.sendMail.mockResolvedValue({
@@ -208,8 +213,6 @@ describe('NodemailerEmailAdapter', () => {
 
     it('should handle complex HTML content', async () => {
       const complexHtmlOptions: SendEmailOptions = {
-        to: 'recipient@example.com',
-        subject: 'Test Subject',
         html: `
           <!DOCTYPE html>
           <html>
@@ -226,6 +229,8 @@ describe('NodemailerEmailAdapter', () => {
             </body>
           </html>
         `,
+        subject: 'Test Subject',
+        to: 'recipient@example.com',
       };
 
       mockTransporter.sendMail.mockResolvedValue({
@@ -245,7 +250,9 @@ describe('NodemailerEmailAdapter', () => {
     it('should log error details when email sending fails', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
 
       const testError = new Error('Network timeout');
       mockTransporter.sendMail.mockRejectedValue(testError);
@@ -265,7 +272,9 @@ describe('NodemailerEmailAdapter', () => {
     it('should verify connection successfully and return true', async () => {
       const consoleLogSpy = jest
         .spyOn(console, 'log')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
 
       mockTransporter.verify.mockResolvedValue(true);
 
@@ -281,10 +290,14 @@ describe('NodemailerEmailAdapter', () => {
     it('should return false when connection verification fails', async () => {
       const consoleLogSpy = jest
         .spyOn(console, 'log')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
 
       mockTransporter.verify.mockRejectedValue(new Error('Connection refused'));
 
@@ -303,10 +316,14 @@ describe('NodemailerEmailAdapter', () => {
     it('should log error details when verification fails', async () => {
       const consoleLogSpy = jest
         .spyOn(console, 'log')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
 
       const testError = new Error('Authentication failed');
       mockTransporter.verify.mockRejectedValue(testError);
@@ -325,10 +342,14 @@ describe('NodemailerEmailAdapter', () => {
     it('should handle network timeout errors', async () => {
       const consoleLogSpy = jest
         .spyOn(console, 'log')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          /* empty */
+        });
 
       const timeoutError = new Error('ETIMEDOUT');
       mockTransporter.verify.mockRejectedValue(timeoutError);

@@ -1,16 +1,17 @@
 import { ForgotPasswordDto } from '@/domain/dtos';
-import { Context, MockContext, createMockContext } from '../../../context';
+import { NotFoundException } from '@/domain/exceptions';
 import {
   ForgotPasswordUseCase,
   PasswordResetTokenEntity,
 } from '@/domain/index';
+import { generateToken } from '@/infraestructure/utils';
+
 import {
   mockAuthRepository,
   mockEmailService,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
-import { NotFoundException } from '@/domain/exceptions';
-import { generateToken } from '@/infraestructure/utils';
+import { Context, createMockContext, MockContext } from '../../../context';
 
 let mockCtx: MockContext;
 let ctx: Context;
@@ -20,14 +21,14 @@ const forgotPasswordDto: ForgotPasswordDto = {
 };
 
 const passwordResetToken: PasswordResetTokenEntity = {
-  user_id: mockUserWithoutPassword.id,
-  token: generateToken().token,
-  expires_at: generateToken().expires_at,
-  used_at: null,
   created_at: new Date(),
+  expires_at: generateToken().expires_at,
   id: '1',
   isExpired: () => false,
   isValid: () => true,
+  token: generateToken().token,
+  used_at: null,
+  user_id: mockUserWithoutPassword.id,
 };
 
 describe('ForgotPasswordUseCase', () => {

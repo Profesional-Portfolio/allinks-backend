@@ -1,37 +1,39 @@
 import { Router } from 'express';
-import { AuthController } from './auth.controller';
-import { AuthDatasourceImpl } from '@/infraestructure/datasources/auth.datasource.impl';
-import { AuthRepositoryImpl } from '@/infraestructure/repositories';
-import prismadb from '@/infraestructure/prismadb';
+
+import { UploadImageUseCase } from '@/domain/index';
 import {
-  JwtTokenProviderAdapter,
+  ForgotPasswordUseCase,
+  LoginUserUseCase,
+  LogoutUserUseCase,
+  RefreshTokenUseCase,
+  RegisterUserUseCase,
+  ResendVerificationEmailUseCase,
+  ResetPasswordUseCase,
+  SendWelcomeEmailUseCase,
+  ValidateResetTokenUseCase,
+  VerifyEmailUseCase,
+} from '@/domain/use-cases/auth';
+import {
   BcryptPasswordHasherAdapter,
-  getEmailAdapter,
   CacheRedisAdapter,
+  getEmailAdapter,
+  JwtTokenProviderAdapter,
 } from '@/infraestructure/adapters';
+import { CloudinaryImageUploaderAdapter } from '@/infraestructure/adapters/cloudinary-image-uploader.adapter';
+import { AuthDatasourceImpl } from '@/infraestructure/datasources/auth.datasource.impl';
+import prismadb from '@/infraestructure/prismadb';
+import { AuthRepositoryImpl } from '@/infraestructure/repositories';
 import { CacheService } from '@/infraestructure/services';
+
 import {
-  CacheRateLimitMiddleware,
   AuthMiddleware,
+  CacheRateLimitMiddleware,
   upload,
 } from '../middlewares';
-import {
-  RegisterUserUseCase,
-  LoginUserUseCase,
-  RefreshTokenUseCase,
-  SendWelcomeEmailUseCase,
-  VerifyEmailUseCase,
-  ResetPasswordUseCase,
-  ForgotPasswordUseCase,
-  ResendVerificationEmailUseCase,
-  ValidateResetTokenUseCase,
-  LogoutUserUseCase,
-} from '@/domain/use-cases/auth';
-import { UploadImageUseCase } from '@/domain/index';
-import { CloudinaryImageUploaderAdapter } from '@/infraestructure/adapters/cloudinary-image-uploader.adapter';
+import { AuthController } from './auth.controller';
 
-export class AuthRoutes {
-  static get routes(): Router {
+export const AuthRoutes = {
+  get routes(): Router {
     // Adapters
     const tokenProvider = new JwtTokenProviderAdapter();
     const passwordHasher = new BcryptPasswordHasherAdapter();
@@ -719,5 +721,5 @@ export class AuthRoutes {
     router.post('/validate-token', controller.validateToken);
 
     return router;
-  }
-}
+  },
+};
