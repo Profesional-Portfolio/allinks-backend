@@ -1,17 +1,16 @@
-import { LinkEntity } from '../../../src/domain/entities';
 import { LinkMapper } from '../../../src/infraestructure/mappers/link.mapper';
 
 describe('LinkMapper', () => {
   const mockLinkData = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    user_id: '987e6543-e21b-12d3-a456-426614174999',
-    platform: 'github',
-    url: 'https://github.com/testuser',
-    title: 'My GitHub Profile',
-    display_order: 1,
-    is_active: true,
     created_at: new Date('2024-01-01T00:00:00.000Z'),
+    display_order: 1,
+    id: '123e4567-e89b-12d3-a456-426614174000',
+    is_active: true,
+    platform: 'github',
+    title: 'My GitHub Profile',
     updated_at: new Date('2024-01-02T00:00:00.000Z'),
+    url: 'https://github.com/testuser',
+    user_id: '987e6543-e21b-12d3-a456-426614174999',
   };
 
   describe('toEntity', () => {
@@ -177,15 +176,15 @@ describe('LinkMapper', () => {
 
     it('should handle complete link data from database', () => {
       const dbLinkData = {
-        id: '550e8400-e29b-41d4-a716-446655440000',
-        user_id: '660e8400-e29b-41d4-a716-446655440001',
-        platform: 'linkedin',
-        url: 'https://linkedin.com/in/johndoe',
-        title: 'Professional Profile',
-        display_order: 3,
-        is_active: true,
         created_at: new Date('2024-06-15T10:30:00.000Z'),
+        display_order: 3,
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        is_active: true,
+        platform: 'linkedin',
+        title: 'Professional Profile',
         updated_at: new Date('2024-06-20T14:45:00.000Z'),
+        url: 'https://linkedin.com/in/johndoe',
+        user_id: '660e8400-e29b-41d4-a716-446655440001',
       };
 
       const result = LinkMapper.toEntity(dbLinkData);
@@ -204,8 +203,8 @@ describe('LinkMapper', () => {
     it('should handle extra properties in input object', () => {
       const linkDataWithExtra = {
         ...mockLinkData,
-        extra_field: 'should be ignored',
         another_field: 123,
+        extra_field: 'should be ignored',
       };
 
       const result = LinkMapper.toEntity(linkDataWithExtra);
@@ -220,9 +219,9 @@ describe('LinkMapper', () => {
 
     it('should map multiple links correctly', () => {
       const links = [
-        { ...mockLinkData, id: '1', display_order: 1 },
-        { ...mockLinkData, id: '2', display_order: 2 },
-        { ...mockLinkData, id: '3', display_order: 3 },
+        { ...mockLinkData, display_order: 1, id: '1' },
+        { ...mockLinkData, display_order: 2, id: '2' },
+        { ...mockLinkData, display_order: 3, id: '3' },
       ];
 
       const results = links.map(link => LinkMapper.toEntity(link));

@@ -1,7 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { AuthorizeLinkOwnerMiddleware } from '@/presentation/middlewares/authorize-link-owner.middleware';
-import { mockLinksRepository } from '../../__mocks__';
+import { NextFunction, Request, Response } from 'express';
+
 import { StatusCode } from '@/domain/enums';
+import { AuthorizeLinkOwnerMiddleware } from '@/presentation/middlewares/authorize-link-owner.middleware';
+
+import { mockLinksRepository } from '../../__mocks__';
 
 describe('AuthorizeLinkOwnerMiddleware', () => {
   let middleware: AuthorizeLinkOwnerMiddleware;
@@ -12,12 +14,12 @@ describe('AuthorizeLinkOwnerMiddleware', () => {
   beforeEach(() => {
     middleware = new AuthorizeLinkOwnerMiddleware(mockLinksRepository);
     mockRequest = {
-      user: { id: 'user-123' } as any,
       params: { id: 'link-123' },
+      user: { email: '', id: 'user-123' },
     };
     mockResponse = {
-      status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
+      status: jest.fn().mockReturnThis(),
     };
     nextFunction = jest.fn();
     jest.clearAllMocks();
@@ -26,7 +28,17 @@ describe('AuthorizeLinkOwnerMiddleware', () => {
   it('should call next if user is the owner of the link', async () => {
     mockLinksRepository.getLinkById.mockResolvedValue([
       undefined,
-      { id: 'link-123', user_id: 'user-123' } as any,
+      {
+        created_at: new Date(),
+        display_order: 0,
+        id: 'link-123',
+        is_active: false,
+        platform: '',
+        title: '',
+        updated_at: new Date(),
+        url: '',
+        user_id: 'user-123',
+      },
     ]);
 
     await middleware.authorize(
@@ -41,7 +53,17 @@ describe('AuthorizeLinkOwnerMiddleware', () => {
   it('should return 403 if user is not the owner', async () => {
     mockLinksRepository.getLinkById.mockResolvedValue([
       undefined,
-      { id: 'link-123', user_id: 'other-user' } as any,
+      {
+        created_at: new Date(),
+        display_order: 0,
+        id: 'link-123',
+        is_active: false,
+        platform: '',
+        title: '',
+        updated_at: new Date(),
+        url: '',
+        user_id: 'other-user',
+      },
     ]);
 
     await middleware.authorize(

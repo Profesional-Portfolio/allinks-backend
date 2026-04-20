@@ -1,7 +1,7 @@
 import { type ZodError } from 'zod';
 
 export const formatValidationError = (errors: ZodError) => {
-  if (!errors || !errors.issues) return 'Validation failed';
+  if (!errors?.issues) return 'Validation failed';
 
   if (Array.isArray(errors.issues))
     return errors.issues

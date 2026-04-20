@@ -1,16 +1,18 @@
+import { Router } from 'express';
+
 import {
   CheckAvailabilityUsernameUseCase,
   GetPublicProfileUseCase,
 } from '@/domain/index';
+import { CacheRedisAdapter } from '@/infraestructure/adapters';
 import { UsersDatasourceImpl } from '@/infraestructure/datasources/users.datasource.impl';
 import { UsersRepositoryImpl } from '@/infraestructure/repositories';
-import { CacheRedisAdapter } from '@/infraestructure/adapters';
 import { CacheService } from '@/infraestructure/services';
-import { Router } from 'express';
+
 import { PublicController } from './public.controller';
 
-export class PublicRoutes {
-  static get routes(): Router {
+export const PublicRoutes = {
+  get routes(): Router {
     const router = Router();
     const datasource = new UsersDatasourceImpl();
     const usersRepository = new UsersRepositoryImpl(datasource);
@@ -127,5 +129,5 @@ export class PublicRoutes {
     );
 
     return router;
-  }
-}
+  },
+};

@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
-import { TokenProvider, TokenPayload, TokenPair } from '@/domain/interfaces';
+
 import { ENV } from '@/config/index';
 import { Exception } from '@/domain/exceptions';
+import { TokenPair, TokenPayload, TokenProvider } from '@/domain/interfaces';
 
 export class JwtTokenProviderAdapter implements TokenProvider {
   constructor(
@@ -18,10 +19,10 @@ export class JwtTokenProviderAdapter implements TokenProvider {
       return Promise.resolve([
         undefined,
         jwt.sign(payload, this.accessSecret, {
-          expiresIn: this.accessExpiresIn as any,
+          expiresIn: Number(this.accessExpiresIn),
         }),
       ]);
-    } catch (error) {
+    } catch {
       const err = new Exception('Error generating access token', 500);
       return Promise.resolve([err, '']);
     }
@@ -34,10 +35,10 @@ export class JwtTokenProviderAdapter implements TokenProvider {
       return Promise.resolve([
         undefined,
         jwt.sign(payload, this.refreshSecret, {
-          expiresIn: this.refreshExpiresIn as any,
+          expiresIn: Number(this.refreshExpiresIn),
         }),
       ]);
-    } catch (error) {
+    } catch {
       const err = new Exception('Error generating refresh token', 500);
       return Promise.resolve([err, '']);
     }
@@ -51,7 +52,7 @@ export class JwtTokenProviderAdapter implements TokenProvider {
     const [errorRefreshToken, refreshToken] =
       await this.generateRefreshToken(payload);
     if (errorAccessToken || errorRefreshToken) {
-      return [errorAccessToken || errorRefreshToken, {} as TokenPair];
+      return [errorAccessToken ?? errorRefreshToken, {} as TokenPair];
     }
 
     return [undefined, { accessToken, refreshToken }];
@@ -62,8 +63,8 @@ export class JwtTokenProviderAdapter implements TokenProvider {
   ): Promise<[Exception | undefined, TokenPayload]> {
     try {
       const decoded = jwt.verify(token, this.accessSecret) as TokenPayload;
-      return Promise.resolve([undefined, decoded]);
-    } catch (error) {
+      return await Promise.resolve([undefined, decoded]);
+    } catch {
       const err = new Exception('Invalid token', 401);
       return Promise.resolve([err, {} as TokenPayload]);
     }
@@ -74,8 +75,8 @@ export class JwtTokenProviderAdapter implements TokenProvider {
   ): Promise<[Exception | undefined, TokenPayload]> {
     try {
       const decoded = jwt.verify(token, this.refreshSecret) as TokenPayload;
-      return Promise.resolve([undefined, decoded]);
-    } catch (error) {
+      return await Promise.resolve([undefined, decoded]);
+    } catch {
       const err = new Exception('Invalid token', 401);
       return Promise.resolve([err, {} as TokenPayload]);
     }

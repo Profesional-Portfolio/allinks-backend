@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import { LinksRepository } from '@/domain/repositories';
+import { NextFunction, Request, Response } from 'express';
+
 import { StatusCode } from '@/domain/enums';
+import { LinksRepository } from '@/domain/repositories';
 
 export class AuthorizeBulkLinksMiddleware {
   constructor(private readonly linksRepository: LinksRepository) {}
@@ -9,16 +10,17 @@ export class AuthorizeBulkLinksMiddleware {
     try {
       let linkIds: string[] = [];
 
-      const userId = req.user?.id!;
+      const userId = req.user?.id;
+      const body = req.body as Record<string, unknown>;
 
-      if (req.body.linkIds && Array.isArray(req.body.linkIds)) {
-        linkIds = req.body.linkIds;
-      } else if (req.body.links && Array.isArray(req.body.links)) {
-        linkIds = req.body.links.map((link: any) =>
+      if (body.linkIds && Array.isArray(body.linkIds)) {
+        linkIds = body.linkIds as string[];
+      } else if (body.links && Array.isArray(body.links)) {
+        linkIds = body.links.map((link: string | { id: string }) =>
           typeof link === 'string' ? link : link.id
         );
-      } else if (req.body.orders && Array.isArray(req.body.orders)) {
-        linkIds = req.body.orders.map((item: any) => item.linkId || item.id);
+      } else if (body.orders && Array.isArray(body.orders)) {
+        linkIds = body.orders.map((item: { id: string }) => item.id);
       }
 
       if (!linkIds.length) {
@@ -40,7 +42,7 @@ export class AuthorizeBulkLinksMiddleware {
 
       const [exception, links] = await this.linksRepository.getLinksByIds({
         ids: linkIds,
-        user_id: userId,
+        user_id: userId ?? '',
       });
 
       if (exception) {
@@ -61,7 +63,7 @@ export class AuthorizeBulkLinksMiddleware {
       }
 
       next();
-    } catch (error) {
+    } catch {
       return res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
         error: 'Internal Server Error',
         message: 'Something went wrong',

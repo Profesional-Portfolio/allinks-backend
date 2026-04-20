@@ -1,27 +1,17 @@
-import { LinksDataSourceImpl } from '@/infraestructure/datasources/links.datasource.impl';
-import { PrismaClient } from '@/generated/prisma/client';
-import { BadRequestException } from '@/domain/exceptions';
+/* eslint-disable @typescript-eslint/unbound-method */
+import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
+
 import { Platforms } from '@/domain/enums';
+import { BadRequestException } from '@/domain/exceptions';
+import { LinksDataSourceImpl } from '@/infraestructure/datasources/links.datasource.impl';
+import { PrismaClient } from '@/prisma/client';
 
 describe('LinksDataSourceImpl', () => {
   let linksDataSource: LinksDataSourceImpl;
-  let prismaMock: jest.Mocked<PrismaClient>;
+  let prismaMock: DeepMockProxy<PrismaClient>;
 
   beforeEach(() => {
-    prismaMock = {
-      link: {
-        count: jest.fn(),
-        aggregate: jest.fn(),
-        create: jest.fn(),
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-        update: jest.fn(),
-      },
-      platform: {
-        findUnique: jest.fn(),
-      },
-      $transaction: jest.fn(),
-    } as any;
+    prismaMock = mockDeep<PrismaClient>();
     linksDataSource = new LinksDataSourceImpl(prismaMock);
   });
 
@@ -31,27 +21,35 @@ describe('LinksDataSourceImpl', () => {
 
   describe('createLink', () => {
     const payload = {
-      user_id: 'user-123',
-      platform: Platforms.GITHUB,
-      url: 'https://github.com/davejs',
-      title: 'My GitHub',
       is_active: true,
+      platform: Platforms.GITHUB,
+      title: 'My GitHub',
+      url: 'https://github.com/davejs',
+      user_id: 'user-123',
     };
 
-
     it('should create link successfully', async () => {
-      (prismaMock.link.count as jest.Mock).mockResolvedValue(0);
-      (prismaMock.link.aggregate as jest.Mock).mockResolvedValue({ _max: { display_order: null } });
-      (prismaMock.platform.findUnique as jest.Mock).mockResolvedValue({ name: 'GitHub', url_pattern: '.*' });
-      
+      prismaMock.link.count.mockResolvedValue(0);
+      prismaMock.link.aggregate.mockResolvedValue({
+        _avg: null,
+        _count: null,
+        _max: { display_order: null },
+        _min: null,
+        _sum: null,
+      } as any);
+      prismaMock.platform.findUnique.mockResolvedValue({
+        name: 'GitHub',
+        url_pattern: '.*',
+      } as any);
+
       const createdLink = {
         id: 'link-1',
         ...payload,
-        display_order: 1,
         created_at: new Date(),
+        display_order: 1,
         updated_at: new Date(),
       };
-      (prismaMock.link.create as jest.Mock).mockResolvedValue(createdLink);
+      prismaMock.link.create.mockResolvedValue(createdLink as any);
 
       const [error, result] = await linksDataSource.createLink(payload);
 
@@ -62,22 +60,32 @@ describe('LinksDataSourceImpl', () => {
     });
 
     it('should return error if limit reached', async () => {
-      (prismaMock.link.count as jest.Mock).mockResolvedValue(20);
+      prismaMock.link.count.mockResolvedValue(20);
 
-      const [error, result] = await linksDataSource.createLink(payload);
+      const [error] = await linksDataSource.createLink(payload);
 
       expect(error).toBeInstanceOf(BadRequestException);
-      expect(error?.message).toBe('You have reached the maximum number of links');
+      expect(error?.message).toBe(
+        'You have reached the maximum number of links'
+      );
     });
 
     it('should return error if URL is invalid for platform', async () => {
-      (prismaMock.link.count as jest.Mock).mockResolvedValue(0);
-      (prismaMock.link.aggregate as jest.Mock).mockResolvedValue({ _max: { display_order: null } });
-      (prismaMock.platform.findUnique as jest.Mock).mockResolvedValue({ name: 'GitHub', url_pattern: '^nevermatch$' });
+      prismaMock.link.count.mockResolvedValue(0);
+      prismaMock.link.aggregate.mockResolvedValue({
+        _max: { display_order: null },
+      } as any);
+      prismaMock.platform.findUnique.mockResolvedValue({
+        name: 'GitHub',
+        url_pattern: '^nevermatch$',
+      } as any);
 
-      const invalidPayload = { ...payload, url: 'https://notgithub.com/davejs' };
+      const invalidPayload = {
+        ...payload,
+        url: 'https://notgithub.com/davejs',
+      };
 
-      const [error, result] = await linksDataSource.createLink(invalidPayload);
+      const [error] = await linksDataSource.createLink(invalidPayload);
 
       expect(error).toBeInstanceOf(BadRequestException);
       expect(error?.message).toBe('Invalid URL');
@@ -87,32 +95,60 @@ describe('LinksDataSourceImpl', () => {
   describe('getLinks', () => {
     it('should get links successfully', async () => {
       const mockLinks = [
-        { id: 'link-1', url: 'test.com', title: 'Test', platform: 'Web', is_active: true, display_order: 1, created_at: new Date(), updated_at: new Date(), user_id: '123' },
+        {
+          created_at: new Date(),
+          display_order: 1,
+          id: 'link-1',
+          is_active: true,
+          platform: 'Web',
+          title: 'Test',
+          updated_at: new Date(),
+          url: 'test.com',
+          user_id: '123',
+        },
       ];
-      (prismaMock.link.findMany as jest.Mock).mockResolvedValue(mockLinks);
+      prismaMock.link.findMany.mockResolvedValue(mockLinks as any);
 
-      const [error, result] = await linksDataSource.getLinks({ user_id: '123' });
+      const [error, result] = await linksDataSource.getLinks({
+        user_id: '123',
+      });
 
       expect(error).toBeUndefined();
-      expect(result.length).toBe(1);
-      expect(result[0].id).toBe('link-1');
+      if (result) {
+        expect(result.length).toBe(1);
+        expect(result[0].id).toBe('link-1');
+      }
       expect(prismaMock.link.findMany).toHaveBeenCalledWith({
-        where: { user_id: '123' },
         orderBy: { display_order: 'asc' },
+        where: { user_id: '123' },
       });
     });
   });
 
   describe('updateLink', () => {
     it('should update link successfully', async () => {
-      const dbLink = { id: 'link-1', url: 'old.com', title: 'Old', platform: 'Web', is_active: true, display_order: 1, created_at: new Date(), updated_at: new Date(), user_id: 'user-123' };
-      (prismaMock.link.findUnique as jest.Mock).mockResolvedValue(dbLink);
-      (prismaMock.platform.findUnique as jest.Mock).mockResolvedValue(null);
+      const dbLink = {
+        created_at: new Date(),
+        display_order: 1,
+        id: 'link-1',
+        is_active: true,
+        platform: 'Web',
+        title: 'Old',
+        updated_at: new Date(),
+        url: 'old.com',
+        user_id: 'user-123',
+      };
+      prismaMock.link.findUnique.mockResolvedValue(dbLink as any);
+      prismaMock.platform.findUnique.mockResolvedValue(null);
 
       const updatedDbLink = { ...dbLink, title: 'New Title' };
-      (prismaMock.link.update as jest.Mock).mockResolvedValue(updatedDbLink);
+      prismaMock.link.update.mockResolvedValue(updatedDbLink as any);
 
-      const [error, result] = await linksDataSource.updateLink({ id: 'link-1', user_id: 'user-123', title: 'New Title' });
+      const [error, result] = await linksDataSource.updateLink({
+        id: 'link-1',
+        title: 'New Title',
+        user_id: 'user-123',
+      });
 
       expect(error).toBeUndefined();
       expect(result?.title).toBe('New Title');
@@ -122,17 +158,33 @@ describe('LinksDataSourceImpl', () => {
 
   describe('changeVisibility', () => {
     it('should change visibility successfully', async () => {
-      const dbLink = { id: 'link-1', url: 'test.com', title: 'Test', platform: 'Web', is_active: true, display_order: 1, created_at: new Date(), updated_at: new Date(), user_id: 'user-123' };
-      (prismaMock.link.findUnique as jest.Mock).mockResolvedValue(dbLink);
-      (prismaMock.link.update as jest.Mock).mockResolvedValue({ ...dbLink, is_active: false });
+      const dbLink = {
+        created_at: new Date(),
+        display_order: 1,
+        id: 'link-1',
+        is_active: true,
+        platform: 'Web',
+        title: 'Test',
+        updated_at: new Date(),
+        url: 'test.com',
+        user_id: 'user-123',
+      };
+      prismaMock.link.findUnique.mockResolvedValue(dbLink as any);
+      prismaMock.link.update.mockResolvedValue({
+        ...dbLink,
+        is_active: false,
+      } as any);
 
-      const [error, result] = await linksDataSource.changeVisibility({ id: 'link-1', user_id: 'user-123' });
+      const [error, result] = await linksDataSource.changeVisibility({
+        id: 'link-1',
+        user_id: 'user-123',
+      });
 
       expect(error).toBeUndefined();
       expect(result).toBe('Link updated');
       expect(prismaMock.link.update).toHaveBeenCalledWith({
-        where: { id: 'link-1', user_id: 'user-123' },
         data: { is_active: false },
+        where: { id: 'link-1', user_id: 'user-123' },
       });
     });
   });
@@ -140,15 +192,15 @@ describe('LinksDataSourceImpl', () => {
   describe('reorderLinks', () => {
     it('should reorder links successfully', async () => {
       const dbLinks = [{ id: 'link-1' }, { id: 'link-2' }];
-      (prismaMock.link.findMany as jest.Mock).mockResolvedValue(dbLinks);
-      (prismaMock.$transaction as jest.Mock).mockResolvedValue({});
+      prismaMock.link.findMany.mockResolvedValue(dbLinks as any);
+      prismaMock.$transaction.mockResolvedValue({} as any);
 
       const payload = {
-        user_id: 'user-123',
         links: [
-          { id: 'link-1', display_order: 2 },
-          { id: 'link-2', display_order: 1 },
+          { display_order: 2, id: 'link-1' },
+          { display_order: 1, id: 'link-2' },
         ],
+        user_id: 'user-123',
       };
 
       const [error, result] = await linksDataSource.reorderLinks(payload);

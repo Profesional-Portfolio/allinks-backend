@@ -1,14 +1,15 @@
-import { JwtTokenProviderAdapter } from '../../../src/infraestructure/adapters/jwt-token-provider.adapter';
 import * as jwt from 'jsonwebtoken';
+
 import { Exception } from '@/domain/exceptions';
 import { TokenPayload } from '@/domain/interfaces';
+
+import { JwtTokenProviderAdapter } from '../../../src/infraestructure/adapters/jwt-token-provider.adapter';
 
 jest.mock('jsonwebtoken');
 
 import { ENV } from '@/config/env';
 
-let tokenProvider: JwtTokenProviderAdapter;
-tokenProvider = new JwtTokenProviderAdapter();
+const tokenProvider: JwtTokenProviderAdapter = new JwtTokenProviderAdapter();
 describe('JwtTokenProviderAdapter', () => {
   const mockJwt = jwt as jest.Mocked<typeof jwt>;
   const secretKey = ENV.JWT_ACCESS_SECRET;
@@ -20,12 +21,12 @@ describe('JwtTokenProviderAdapter', () => {
 
   describe('generateToken', () => {
     it('should generate access token correctly', async () => {
-      const payload: TokenPayload = { id: '123', email: 'test@test.com' };
+      const payload: TokenPayload = { email: 'test@test.com', id: '123' };
       const token = 'generated-token';
 
       mockJwt.sign.mockReturnValue(token as any);
 
-      const [error, result] = await tokenProvider.generateAccessToken(payload);
+      const [, result] = await tokenProvider.generateAccessToken(payload);
 
       expect(mockJwt.sign).toHaveBeenCalledWith(payload, secretKey, {
         expiresIn: '15m',
@@ -36,12 +37,12 @@ describe('JwtTokenProviderAdapter', () => {
 
   describe('generateRefreshToken', () => {
     it('should generate refresh token correctly', async () => {
-      const payload: TokenPayload = { id: '123', email: 'test@test.com' };
+      const payload: TokenPayload = { email: 'test@test.com', id: '123' };
       const token = 'refresh-token';
 
       mockJwt.sign.mockReturnValue(token as any);
 
-      const [error, result] = await tokenProvider.generateRefreshToken(payload);
+      const [, result] = await tokenProvider.generateRefreshToken(payload);
 
       expect(mockJwt.sign).toHaveBeenCalledWith(payload, refreshSecretKey, {
         expiresIn: '7d',
@@ -53,11 +54,11 @@ describe('JwtTokenProviderAdapter', () => {
   describe('verifyToken', () => {
     it('should verify token correctly', async () => {
       const token = 'valid-token';
-      const payload = { userId: '123', email: 'test@test.com' };
+      const payload = { email: 'test@test.com', userId: '123' };
 
       mockJwt.verify.mockReturnValue(payload as any);
 
-      const [error, result] = await tokenProvider.verifyAccessToken(token);
+      const [, result] = await tokenProvider.verifyAccessToken(token);
 
       expect(mockJwt.verify).toHaveBeenCalledWith(token, secretKey);
       expect(result).toEqual(payload);
@@ -70,7 +71,7 @@ describe('JwtTokenProviderAdapter', () => {
         throw new Error('Invalid token');
       });
 
-      const [error, result] = await tokenProvider.verifyAccessToken(token);
+      const [error] = await tokenProvider.verifyAccessToken(token);
 
       // expect(mockJwt.verify).toHaveBeenCalledWith(token, secretKey);
       expect(error).toBeInstanceOf(Exception);
@@ -83,7 +84,7 @@ describe('JwtTokenProviderAdapter', () => {
 
         mockJwt.verify.mockReturnValue(payload as any);
 
-        const [error, result] = await tokenProvider.verifyRefreshToken(token);
+        const [, result] = await tokenProvider.verifyRefreshToken(token);
 
         expect(mockJwt.verify).toHaveBeenCalledWith(token, refreshSecretKey);
         expect(result).toEqual(payload);

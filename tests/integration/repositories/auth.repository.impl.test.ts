@@ -1,9 +1,11 @@
-import { AuthRepositoryImpl } from '../../../src/infraestructure/repositories/auth.repository.impl';
-import { AuthDatasourceImpl } from '../../../src/infraestructure/datasources/auth.datasource.impl';
-import { BcryptPasswordHasherAdapter } from '@/infraestructure/adapters';
+/* eslint-disable @typescript-eslint/unbound-method */
 import { PasswordHasher } from '@/domain/interfaces';
-import { validRegisterPayload } from '../../payloads';
+import { BcryptPasswordHasherAdapter } from '@/infraestructure/adapters';
+
+import { AuthDatasourceImpl } from '../../../src/infraestructure/datasources/auth.datasource.impl';
+import { AuthRepositoryImpl } from '../../../src/infraestructure/repositories/auth.repository.impl';
 import { mockUser } from '../../__mocks__';
+import { validRegisterPayload } from '../../payloads';
 import { prismaMock } from '../../setup-unit';
 
 describe('AuthRepository Integration Tests', () => {
@@ -19,7 +21,8 @@ describe('AuthRepository Integration Tests', () => {
 
   describe('findByEmail', () => {
     it('should find user by email', async () => {
-      (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
 
       const [error, result] =
         await authRepository.findUserByEmail('test@test.com');
@@ -30,7 +33,7 @@ describe('AuthRepository Integration Tests', () => {
     });
 
     it('should return null if user not found', async () => {
-      (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(null);
+      prismaMock.user.findUnique.mockResolvedValue(null);
 
       const [error, result] = await authRepository.findUserByEmail(
         'nonexistent@test.com'
@@ -41,7 +44,7 @@ describe('AuthRepository Integration Tests', () => {
     });
 
     it('should handle database errors', async () => {
-      (prismaMock.user.findUnique as jest.Mock).mockRejectedValue(
+      prismaMock.user.findUnique.mockRejectedValue(
         new Error('Database error')
       );
 
@@ -55,7 +58,8 @@ describe('AuthRepository Integration Tests', () => {
 
   describe('findById', () => {
     it('should find user by id', async () => {
-      (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.user.findUnique.mockResolvedValue(mockUser as any);
 
       const [err, result] = await authRepository.findUserById('123');
 
@@ -65,7 +69,7 @@ describe('AuthRepository Integration Tests', () => {
     });
 
     it('should return null if user not found', async () => {
-      (prismaMock.user.findUnique as jest.Mock).mockResolvedValue(null);
+      prismaMock.user.findUnique.mockResolvedValue(null);
 
       const [error, result] =
         await authRepository.findUserById('nonexistent-id');
@@ -77,7 +81,8 @@ describe('AuthRepository Integration Tests', () => {
 
   describe('create', () => {
     it('should create new user', async () => {
-      (prismaMock.user.create as jest.Mock).mockResolvedValue(mockUser);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.user.create.mockResolvedValue(mockUser as any);
 
       const [err, result] = await authRepository.register(validRegisterPayload);
 
@@ -87,7 +92,7 @@ describe('AuthRepository Integration Tests', () => {
     });
 
     it('should throw error if email already exists', async () => {
-      (prismaMock.user.create as jest.Mock).mockRejectedValue(
+      prismaMock.user.create.mockRejectedValue(
         new Error('Unique constraint failed')
       );
 
@@ -102,16 +107,17 @@ describe('AuthRepository Integration Tests', () => {
     it('should update user last login timestamp', async () => {
       const userId = '123';
       const updatedUser = {
-        id: userId,
+        created_at: new Date(),
         email: 'test@test.com',
+        id: userId,
+        lastLoginAt: new Date(),
         name: 'Test User',
         password: 'hashed-password',
-        created_at: new Date(),
         updatedAt: new Date(),
-        lastLoginAt: new Date(),
       };
 
-      (prismaMock.user.update as jest.Mock).mockResolvedValue(updatedUser);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      prismaMock.user.update.mockResolvedValue(updatedUser as any);
 
       await authRepository.updateLastLogin(userId);
 
@@ -119,7 +125,7 @@ describe('AuthRepository Integration Tests', () => {
     });
 
     it('should throw error if user not found', async () => {
-      (prismaMock.user.update as jest.Mock).mockRejectedValue(
+      prismaMock.user.update.mockRejectedValue(
         new Error('User not found')
       );
 

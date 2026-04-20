@@ -1,11 +1,12 @@
-import { Exception, UserWithoutPassword, UsersRepository } from '../..';
 import { CacheService } from '@/infraestructure/services';
+
+import { Exception, UsersRepository, UserWithoutPassword } from '../..';
 
 interface IUpdateUserAvatarUseCase {
   execute(
     id: UserWithoutPassword['id'],
     avatarUrl: string
-  ): Promise<[Exception | null, string | null]>;
+  ): Promise<[Exception | null, null | string]>;
 }
 
 export class UpdateUserAvatarUseCase implements IUpdateUserAvatarUseCase {
@@ -17,7 +18,7 @@ export class UpdateUserAvatarUseCase implements IUpdateUserAvatarUseCase {
   async execute(
     id: UserWithoutPassword['id'],
     avatarUrl: string
-  ): Promise<[Exception | null, string | null]> {
+  ): Promise<[Exception | null, null | string]> {
     const [error, user] = await this.userRepository.updateAvatarUser(
       id,
       avatarUrl
@@ -31,6 +32,6 @@ export class UpdateUserAvatarUseCase implements IUpdateUserAvatarUseCase {
       return [error, null];
     }
 
-    return [null, user?.avatar_url as string];
+    return [null, user?.avatar_url ?? null];
   }
 }

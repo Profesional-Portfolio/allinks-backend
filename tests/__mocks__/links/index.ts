@@ -1,2 +1,2 @@
-export * from './links.mock';
 export * from './links-repository.mock';
+export * from './links.mock';

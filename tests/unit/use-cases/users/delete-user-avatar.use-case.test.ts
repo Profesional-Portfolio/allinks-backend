@@ -1,7 +1,8 @@
 import { DeleteUserAvatarUseCase } from '@/domain/use-cases/users/delete-user-avatar.use-case';
+
 import {
-  mockUsersRepository,
   mockCacheService,
+  mockUsersRepository,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
 
@@ -18,7 +19,10 @@ describe('DeleteUserAvatarUseCase', () => {
 
   describe('execute', () => {
     it('should delete avatar and invalidate cache successfully', async () => {
-      mockUsersRepository.deleteAvatarUser.mockResolvedValue([undefined, mockUserWithoutPassword]);
+      mockUsersRepository.deleteAvatarUser.mockResolvedValue([
+        undefined,
+        mockUserWithoutPassword,
+      ]);
 
       const [error, result] = await deleteUserAvatarUseCase.execute('user-123');
 
@@ -32,7 +36,10 @@ describe('DeleteUserAvatarUseCase', () => {
 
     it('should return error if repository fails', async () => {
       const mockError = { message: 'Not found', statusCode: 404 };
-      mockUsersRepository.deleteAvatarUser.mockResolvedValue([mockError as any, null]);
+      mockUsersRepository.deleteAvatarUser.mockResolvedValue([
+        mockError as any,
+        null,
+      ]);
 
       const [error, result] = await deleteUserAvatarUseCase.execute('user-123');
 

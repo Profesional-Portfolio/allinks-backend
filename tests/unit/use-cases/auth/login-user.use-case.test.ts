@@ -1,16 +1,15 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { LoginUserDto } from '@/domain/dtos';
-import { Context, MockContext, createMockContext } from '../../../context';
+import { BadRequestException, NotFoundException } from '@/domain/exceptions';
 import { LoginUserUseCase } from '@/domain/index';
+
 import {
   mockAuthRepository,
   mockCacheService,
   mockTokenProvider,
   mockUserWithoutPassword,
 } from '../../../__mocks__';
-import { BadRequestException, NotFoundException } from '@/domain/exceptions';
-
-let mockCtx: MockContext;
-let ctx: Context;
+import { Context, createMockContext, MockContext } from '../../../context';
 
 const loginDto: LoginUserDto = {
   email: 'test@test.com',
@@ -22,11 +21,15 @@ const refreshToken = 'refresh-token';
 
 describe('LoginUserUseCase', () => {
   let loginUserUseCase: LoginUserUseCase;
+  let mockCtx: MockContext;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  let ctx: Context;
 
   beforeEach(() => {
     loginUserUseCase = new LoginUserUseCase(
       mockAuthRepository,
       mockTokenProvider,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockCacheService as any
     );
     mockCtx = createMockContext();
@@ -47,8 +50,8 @@ describe('LoginUserUseCase', () => {
       expect(error).toBeUndefined();
       expect(mockAuthRepository.login).toHaveBeenCalledWith(loginDto);
       expect(mockTokenProvider.generateTokenPair).toHaveBeenCalledWith({
-        id: mockUserWithoutPassword.id,
         email: mockUserWithoutPassword.email,
+        id: mockUserWithoutPassword.id,
       });
       expect(result).toBeDefined();
       expect(result?.user).toBeDefined();
@@ -56,6 +59,7 @@ describe('LoginUserUseCase', () => {
       expect(result?.tokens.accessToken).toBe(accessToken);
       expect(result?.tokens.refreshToken).toBe(refreshToken);
     });
+
     it('should return error if user is not found', async () => {
       mockAuthRepository.login.mockResolvedValue([
         new NotFoundException('User not found'),
@@ -65,6 +69,7 @@ describe('LoginUserUseCase', () => {
       expect(error).toBeDefined();
       expect(result).toBeNull();
     });
+
     it('should return error if password is incorrect', async () => {
       mockAuthRepository.login.mockResolvedValue([
         new BadRequestException('Invalid credentials'),

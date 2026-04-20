@@ -1,8 +1,8 @@
 import {
   Exception,
   LinkEntity,
-  UserWithoutPassword,
   UsersRepository,
+  UserWithoutPassword,
 } from '@/domain/index';
 import { CacheService } from '@/infraestructure/services';
 
@@ -12,7 +12,7 @@ interface IGetPublicProfileUseCase {
   ): Promise<
     [
       Exception | undefined,
-      (UserWithoutPassword & { links: LinkEntity[] }) | null,
+      null | (UserWithoutPassword & { links: LinkEntity[] }),
     ]
   >;
 }
@@ -28,11 +28,13 @@ export class GetPublicProfileUseCase implements IGetPublicProfileUseCase {
   ): Promise<
     [
       Exception | undefined,
-      (UserWithoutPassword & { links: LinkEntity[] }) | null,
+      null | (UserWithoutPassword & { links: LinkEntity[] }),
     ]
   > => {
     // 1. Try to get from cache
-    const cachedProfile = await this.cacheService.getPublicProfile(username);
+    const cachedProfile = (await this.cacheService.getPublicProfile(
+      username
+    )) as null | (UserWithoutPassword & { links: LinkEntity[] });
     if (cachedProfile) {
       return [undefined, cachedProfile];
     }

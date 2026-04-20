@@ -1,5 +1,5 @@
 export interface UploadFileService {
   uploadImage(
-    filePath: string | Buffer
-  ): Promise<{ url: string; publicId: string }>;
+    filePath: Buffer | string
+  ): Promise<{ publicId: string; url: string }>;
 }

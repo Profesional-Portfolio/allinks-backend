@@ -13,16 +13,46 @@ import {
   NotFoundException,
 } from '@/domain/exceptions';
 import { PrismaClient } from '@/prisma/client';
+
 import { LinkMapper } from '../mappers';
 
 export class LinksDataSourceImpl implements LinksDataSource {
   constructor(private readonly prismadb: PrismaClient) {}
 
+  async changeVisibility(
+    payload: IdDto & UserIdDto
+  ): Promise<[Exception | undefined, string]> {
+    try {
+      const { id, user_id } = payload;
+
+      const [exception, link] = await this.getLinkById({ id, user_id });
+
+      if (exception || !link) {
+        return [exception, ''];
+      }
+
+      await this.prismadb.link.update({
+        data: {
+          is_active: !link.is_active,
+        },
+        where: {
+          id,
+          user_id,
+        },
+      });
+
+      return [undefined, 'Link updated'];
+    } catch {
+      const err = new Exception('Error deleting link', 500);
+      return [err, ''];
+    }
+  }
+
   async createLink(
     payload: CreateLinkDto
   ): Promise<[Exception | undefined, LinkEntity | null]> {
     try {
-      const { user_id, platform, url } = payload;
+      const { platform, url, user_id } = payload;
       // verificar que la cuenta de links no supere los 20 links
 
       const linkCount = await this.prismadb.link.count({
@@ -43,11 +73,11 @@ export class LinksDataSourceImpl implements LinksDataSource {
       // get next display order
 
       const maxOrder = await this.prismadb.link.aggregate({
-        where: {
-          user_id,
-        },
         _max: {
           display_order: true,
+        },
+        where: {
+          user_id,
         },
       });
 
@@ -79,66 +109,17 @@ export class LinksDataSourceImpl implements LinksDataSource {
       const link = LinkMapper.toEntity(linkCreated);
 
       return [undefined, link];
-    } catch (error) {
+    } catch {
       const err = new Exception('Error creating link', 500);
       return [err, null];
     }
   }
 
-  async getLinks(
-    userIdDto: UserIdDto
-  ): Promise<[Exception | undefined, LinkEntity[]]> {
-    try {
-      const { user_id } = userIdDto;
-      const links = await this.prismadb.link.findMany({
-        where: {
-          user_id,
-        },
-        orderBy: {
-          display_order: 'asc',
-        },
-      });
-
-      const linksMapped = links.map(link => LinkMapper.toEntity(link));
-
-      return [undefined, linksMapped];
-    } catch (error) {
-      const err = new Exception('Error getting links', 500);
-      return [err, [] as LinkEntity[]];
-    }
-  }
-
-  async getLinksByIds(
-    payload: UserIdDto & { ids: string[] }
-  ): Promise<[Exception | undefined, LinkEntity[]]> {
-    try {
-      const { user_id, ids } = payload;
-      const links = await this.prismadb.link.findMany({
-        where: {
-          id: {
-            in: ids,
-          },
-          user_id,
-        },
-        orderBy: {
-          display_order: 'asc',
-        },
-      });
-
-      const linksMapped = links.map(link => LinkMapper.toEntity(link));
-
-      return [undefined, linksMapped];
-    } catch (error) {
-      const err = new Exception('Error getting links', 500);
-      return [err, [] as LinkEntity[]];
-    }
-  }
-
   async getLinkById(
-    payload: UserIdDto & IdDto
+    payload: IdDto & UserIdDto
   ): Promise<[Exception | undefined, LinkEntity | null]> {
     try {
-      const { user_id, id } = payload;
+      const { id, user_id } = payload;
       const link = await this.prismadb.link.findUnique({
         where: {
           id,
@@ -153,9 +134,106 @@ export class LinksDataSourceImpl implements LinksDataSource {
       const linkMapped = LinkMapper.toEntity(link);
 
       return [undefined, linkMapped];
-    } catch (error) {
+    } catch {
       const err = new Exception('Error getting link', 500);
       return [err, null];
+    }
+  }
+
+  async getLinks(
+    userIdDto: UserIdDto
+  ): Promise<[Exception | undefined, LinkEntity[]]> {
+    try {
+      const { user_id } = userIdDto;
+      console.log({ user_id });
+      const links = await this.prismadb.link.findMany({
+        orderBy: {
+          display_order: 'asc',
+        },
+        where: {
+          user_id,
+        },
+      });
+
+      console.log({ links });
+
+      const linksMapped = links.map(link => LinkMapper.toEntity(link));
+
+      return [undefined, linksMapped];
+    } catch {
+      const err = new Exception('Error getting links', 500);
+      return [err, [] as LinkEntity[]];
+    }
+  }
+
+  async getLinksByIds(
+    payload: UserIdDto & { ids: string[] }
+  ): Promise<[Exception | undefined, LinkEntity[]]> {
+    try {
+      const { ids, user_id } = payload;
+      const links = await this.prismadb.link.findMany({
+        orderBy: {
+          display_order: 'asc',
+        },
+        where: {
+          id: {
+            in: ids,
+          },
+          user_id,
+        },
+      });
+
+      const linksMapped = links.map(link => LinkMapper.toEntity(link));
+
+      return [undefined, linksMapped];
+    } catch {
+      const err = new Exception('Error getting links', 500);
+      return [err, [] as LinkEntity[]];
+    }
+  }
+
+  async reorderLinks(
+    payload: ReorderLinksDto
+  ): Promise<[Exception | undefined, string]> {
+    try {
+      const { links, user_id } = payload;
+
+      const linkIds = links.map(link => link.id);
+
+      const userLinks = await this.prismadb.link.findMany({
+        select: {
+          id: true,
+        },
+        where: {
+          id: {
+            in: linkIds,
+          },
+          user_id,
+        },
+      });
+
+      if (userLinks.length !== linkIds.length) {
+        return [new BadRequestException('Invalid links'), ''];
+      }
+
+      await this.prismadb.$transaction(
+        links.map(link => {
+          const { display_order, id } = link;
+          return this.prismadb.link.update({
+            data: {
+              display_order,
+            },
+            where: {
+              id,
+            },
+          });
+        })
+      );
+
+      return [undefined, 'Links reordered'];
+    } catch {
+      const err = new Exception('Error reordering links', 500);
+      return [err, ''];
     }
   }
 
@@ -163,8 +241,8 @@ export class LinksDataSourceImpl implements LinksDataSource {
     payload: UpdateLinkDto
   ): Promise<[Exception | undefined, LinkEntity | null]> {
     try {
-      const { id, user_id, url, platform, title, is_active } = payload;
-      const [exception, link] = await this.getLinkById({ id, user_id });
+      const { id, is_active, platform, title, url, user_id } = payload;
+      const [exception] = await this.getLinkById({ id, user_id });
 
       if (exception) {
         return [exception, null];
@@ -186,98 +264,24 @@ export class LinksDataSourceImpl implements LinksDataSource {
       }
 
       const updatedLink = await this.prismadb.link.update({
+        data: {
+          is_active,
+          platform,
+          title,
+          url,
+        },
         where: {
           id,
           user_id,
-        },
-        data: {
-          url,
-          platform,
-          title,
-          is_active,
         },
       });
 
       const updatedLinkMapped = LinkMapper.toEntity(updatedLink);
 
       return [undefined, updatedLinkMapped];
-    } catch (error) {
+    } catch {
       const err = new Exception('Error updating link', 500);
       return [err, null];
-    }
-  }
-
-  async changeVisibility(
-    payload: IdDto & UserIdDto
-  ): Promise<[Exception | undefined, string]> {
-    try {
-      const { id, user_id } = payload;
-
-      const [exception, link] = await this.getLinkById({ id, user_id });
-
-      if (exception || !link) {
-        return [exception, ''];
-      }
-
-      await this.prismadb.link.update({
-        where: {
-          id,
-          user_id,
-        },
-        data: {
-          is_active: !link.is_active,
-        },
-      });
-
-      return [undefined, 'Link updated'];
-    } catch (error) {
-      const err = new Exception('Error deleting link', 500);
-      return [err, ''];
-    }
-  }
-
-  async reorderLinks(
-    payload: ReorderLinksDto
-  ): Promise<[Exception | undefined, string]> {
-    try {
-      const { user_id, links } = payload;
-
-      const linkIds = links.map(link => link.id);
-
-      const userLinks = await this.prismadb.link.findMany({
-        where: {
-          id: {
-            in: linkIds,
-          },
-          user_id,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      if (userLinks.length !== linkIds.length) {
-        return [new BadRequestException('Invalid links'), ''];
-      }
-
-      await this.prismadb.$transaction(
-        links.map(link => {
-          const { id, display_order } = link;
-          return this.prismadb.link.update({
-            where: {
-              id,
-            },
-            data: {
-              display_order,
-            },
-          });
-        })
-      );
-
-      return [undefined, 'Links reordered'];
-    } catch (error) {
-      const err = new Exception('Error reordering links', 500);
-      return [err, ''];
     }
   }
 }

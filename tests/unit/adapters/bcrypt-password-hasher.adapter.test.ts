@@ -1,5 +1,6 @@
-import { BcryptPasswordHasherAdapter } from '../../../src/infraestructure/adapters/bcrypt-password-hasher.adapter';
 import * as bcrypt from 'bcrypt';
+
+import { BcryptPasswordHasherAdapter } from '../../../src/infraestructure/adapters/bcrypt-password-hasher.adapter';
 
 jest.mock('bcrypt');
 

@@ -1,4 +1,5 @@
 import { LogoutUserUseCase } from '@/domain/use-cases/auth/logout-user.use-case';
+
 import { mockCacheService } from '../../../__mocks__';
 
 describe('LogoutUserUseCase', () => {
@@ -17,11 +18,15 @@ describe('LogoutUserUseCase', () => {
 
       expect(error).toBeUndefined();
       expect(result).toBe('Logged out successfully');
-      expect(mockCacheService.deleteRefreshToken).toHaveBeenCalledWith('user-123');
+      expect(mockCacheService.deleteRefreshToken).toHaveBeenCalledWith(
+        'user-123'
+      );
     });
 
     it('should return error if cache throws', async () => {
-      mockCacheService.deleteRefreshToken.mockRejectedValue(new Error('Cache error'));
+      mockCacheService.deleteRefreshToken.mockRejectedValue(
+        new Error('Cache error')
+      );
 
       const [error, result] = await logoutUserUseCase.execute('user-123');
 

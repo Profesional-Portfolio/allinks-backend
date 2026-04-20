@@ -9,7 +9,7 @@ import { generateToken } from '@/infraestructure/utils';
 export interface IForgotPasswordUseCase {
   execute(
     forgotPasswordDto: ForgotPasswordDto
-  ): Promise<[Exception | undefined, string | null]>;
+  ): Promise<[Exception | undefined, null | string]>;
 }
 
 const successMessage =
@@ -23,7 +23,7 @@ export class ForgotPasswordUseCase implements IForgotPasswordUseCase {
 
   async execute(
     forgotPasswordDto: ForgotPasswordDto
-  ): Promise<[Exception | undefined, string | null]> {
+  ): Promise<[Exception | undefined, null | string]> {
     const { email } = forgotPasswordDto;
 
     const [exception, user] = await this.authRepository.findUserByEmail(email);
@@ -32,7 +32,7 @@ export class ForgotPasswordUseCase implements IForgotPasswordUseCase {
       return [exception, successMessage];
     }
 
-    const { token, expires_at } = generateToken();
+    const { expires_at, token } = generateToken();
 
     await this.authRepository.deleteUserEmailVerificationTokens(user.id);
 
@@ -42,13 +42,13 @@ export class ForgotPasswordUseCase implements IForgotPasswordUseCase {
       expires_at
     );
 
-    const resetLink = `${ENV.MAIN_FRONTEND_HOST}/reset-password?token=${token}`;
+    const resetLink = `${ENV.MAIN_FRONTEND_HOST ?? ''}/reset-password?token=${token}`;
 
     await this.emailService.sendEmail({
-      to: user.email,
-      subject: 'Reset Password',
       html: EmailTemplates.forgotPasswordEmail(user.first_name, resetLink),
+      subject: 'Reset Password',
       text: EmailTemplates.forgotPasswordEmailText(user.first_name, resetLink),
+      to: user.email,
     });
 
     return [undefined, successMessage];

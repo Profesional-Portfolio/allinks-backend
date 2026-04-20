@@ -1,9 +1,10 @@
-import { AuthRepository } from '@/domain/repositories';
-import { VerifyEmailDto } from '../../dtos/auth/verify-email.dto';
 import { BadRequestException, Exception } from '@/domain/exceptions';
+import { AuthRepository } from '@/domain/repositories';
+
+import { VerifyEmailDto } from '../../dtos/auth/verify-email.dto';
 
 export interface IVerifyEmailUseCase {
-  execute(dto: VerifyEmailDto): Promise<[Exception | undefined, string | null]>;
+  execute(dto: VerifyEmailDto): Promise<[Exception | undefined, null | string]>;
 }
 
 export class VerifyEmailUseCase implements IVerifyEmailUseCase {
@@ -11,7 +12,7 @@ export class VerifyEmailUseCase implements IVerifyEmailUseCase {
 
   async execute(
     dto: VerifyEmailDto
-  ): Promise<[Exception | undefined, string | null]> {
+  ): Promise<[Exception | undefined, null | string]> {
     const [exception, tokenEntity] =
       await this.authRepository.findEmailVerificationToken(dto.token);
 

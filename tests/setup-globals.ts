@@ -1,19 +1,21 @@
 import {
-  jest,
-  expect,
-  beforeEach,
+  afterAll,
   afterEach,
   beforeAll,
-  afterAll,
+  beforeEach,
   describe,
+  expect,
   it,
+  jest,
 } from '@jest/globals';
 
-(globalThis as any).jest = jest;
-(globalThis as any).expect = expect;
-(globalThis as any).beforeEach = beforeEach;
-(globalThis as any).afterEach = afterEach;
-(globalThis as any).beforeAll = beforeAll;
-(globalThis as any).afterAll = afterAll;
-(globalThis as any).describe = describe;
-(globalThis as any).it = it;
+const g = globalThis as unknown as Record<string, unknown>;
+
+g.jest = jest;
+g.expect = expect;
+g.beforeEach = beforeEach;
+g.afterEach = afterEach;
+g.beforeAll = beforeAll;
+g.afterAll = afterAll;
+g.describe = describe;
+g.it = it;

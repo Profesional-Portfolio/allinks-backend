@@ -1,7 +1,7 @@
-import { LinkEntity } from '@/domain/entities';
 import { UpdateLinkDto } from '@/domain/dtos';
-import { LinksRepository, UsersRepository } from '@/domain/repositories';
+import { LinkEntity } from '@/domain/entities';
 import { Exception } from '@/domain/exceptions';
+import { LinksRepository, UsersRepository } from '@/domain/repositories';
 import { CacheService } from '@/infraestructure/services';
 
 interface IUpdateLinkUseCase {

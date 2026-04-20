@@ -1,25 +1,19 @@
-import request from 'supertest';
-import Server from '@/presentation/server';
-import AppRoutes from '@/presentation/routes';
-import { ENV } from '@/config/index';
+import TestAgent from 'supertest/lib/agent';
 import { App } from 'supertest/types';
-import { COOKIE_NAMES } from '@/infraestructure/utils';
+
+import { ENV } from '@/config/index';
 import prismadb from '@/infraestructure/prismadb';
+import AppRoutes from '@/presentation/routes';
+import Server from '@/presentation/server';
+
 import { mockLinksArrays, userOne, userTwo } from '../__mocks__';
 import { getCsrfAgent } from './helpers';
 
 describe('Links Authorization', () => {
   let server: Server;
   let app: App;
-  let agent: any;
+  let agent: TestAgent;
   let csrfToken: string;
-  let userIdOne: string;
-
-  let accessTokenUserOne: string;
-  let refreshTokenUserOne: string;
-  let accessTokenUserTwo: string;
-  let refreshTokenUserTwo: string;
-  let userIdTwo: string;
 
   beforeAll(async () => {
     server = new Server({ port: ENV.PORT, routes: AppRoutes.routes });
@@ -48,31 +42,15 @@ describe('Links Authorization', () => {
       },
     });
 
-    const userOneResponse = await agent
+    await agent
       .post('/api/auth/register')
       .set('x-csrf-token', csrfToken)
       .send(userOne);
 
-    userIdOne = userOneResponse.body.data.user.id;
-    accessTokenUserOne = userOneResponse.headers['set-cookie'][0]
-      .split(';')[0]
-      .split('=')[1];
-    refreshTokenUserOne = userOneResponse.headers['set-cookie'][1]
-      .split(';')[0]
-      .split('=')[1];
-
-    const userTwoResponse = await agent
+    await agent
       .post('/api/auth/register')
       .set('x-csrf-token', csrfToken)
       .send(userTwo);
-
-    userIdTwo = userTwoResponse.body.data.user.id;
-    accessTokenUserTwo = userTwoResponse.headers['set-cookie'][0]
-      .split(';')[0]
-      .split('=')[1];
-    refreshTokenUserTwo = userTwoResponse.headers['set-cookie'][1]
-      .split(';')[0]
-      .split('=')[1];
   });
 
   afterAll(async () => {
@@ -108,8 +86,9 @@ describe('Links Authorization', () => {
         .send(mockLinksArrays[0])
         .expect(401);
 
-      const statusCode = response.body.statusCode;
-      const status = response.body.status;
+      const body = response.body as { status: string; statusCode: number };
+      const statusCode = body.statusCode;
+      const status = body.status;
 
       expect(statusCode).toBe(401);
       expect(status).toBe('error');
@@ -122,8 +101,9 @@ describe('Links Authorization', () => {
         .send(mockLinksArrays[0])
         .expect(201);
 
-      const statusCode = response.body.statusCode;
-      const status = response.body.status;
+      const body = response.body as { status: string; statusCode: number };
+      const statusCode = body.statusCode;
+      const status = body.status;
 
       expect(statusCode).toBe(201);
       expect(status).toBe('success');

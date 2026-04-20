@@ -1,21 +1,19 @@
-import { AuthRepository } from '@/domain/repositories';
 import { ResendEmailVerificationDto } from '@/domain/dtos';
-import { EmailService } from '@/domain/interfaces';
-import { SendWelcomeEmailUseCase } from './send-welcome-email.use-case';
 import { Exception } from '@/domain/exceptions';
+import { AuthRepository } from '@/domain/repositories';
+
+import { SendWelcomeEmailUseCase } from './send-welcome-email.use-case';
 
 export interface IResendVerificationEmailUseCase {
   execute(
     dto: ResendEmailVerificationDto
-  ): Promise<[Exception | undefined, string | null]>;
+  ): Promise<[Exception | undefined, null | string]>;
 }
 
 const successMessage =
   'If the email exists, a verification email has been sent';
 
-export class ResendVerificationEmailUseCase
-  implements IResendVerificationEmailUseCase
-{
+export class ResendVerificationEmailUseCase implements IResendVerificationEmailUseCase {
   constructor(
     private readonly authRepository: AuthRepository,
     private readonly sendWelcomeEmailUseCase: SendWelcomeEmailUseCase
@@ -23,7 +21,7 @@ export class ResendVerificationEmailUseCase
 
   async execute(
     dto: ResendEmailVerificationDto
-  ): Promise<[Exception | undefined, string | null]> {
+  ): Promise<[Exception | undefined, null | string]> {
     const [exception, user] = await this.authRepository.findUserByEmail(
       dto.email
     );

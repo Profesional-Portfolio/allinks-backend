@@ -1,20 +1,20 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/app.ts'],
-  format: ['esm'],
-  outDir: 'dist',
   bundle: true,
-  sourcemap: true,
   clean: true,
+  entry: ['src/app.ts'],
   esbuildOptions(options) {
     options.alias = {
-      '@/prisma/*': './generated/prisma/*',
-      '@/presentation/*': './src/presentation/*',
       '@/config/*': './src/config/*',
+      '@/data/*': './src/data/*',
       '@/domain/*': './src/domain/*',
       '@/infraestructure/*': './src/infraestructure/*',
-      '@/data/*': './src/data/*',
+      '@/presentation/*': './src/presentation/*',
+      '@/prisma/*': './generated/prisma/*',
     };
   },
+  format: ['esm'],
+  outDir: 'dist',
+  sourcemap: true,
 });

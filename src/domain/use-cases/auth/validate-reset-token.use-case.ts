@@ -2,7 +2,7 @@ import { BadRequestException, Exception } from '@/domain/exceptions';
 import { AuthRepository } from '@/domain/repositories';
 
 export interface IValidateResetTokenUseCase {
-  execute(token: string): Promise<[Exception | undefined, string | null]>;
+  execute(token: string): Promise<[Exception | undefined, null | string]>;
 }
 
 export class ValidateResetTokenUseCase implements IValidateResetTokenUseCase {
@@ -10,15 +10,14 @@ export class ValidateResetTokenUseCase implements IValidateResetTokenUseCase {
 
   async execute(
     token: string
-  ): Promise<[Exception | undefined, string | null]> {
-    const [exception, tokenEntity] =
+  ): Promise<[Exception | undefined, null | string]> {
+    const [, tokenEntity] =
       await this.authRepository.findPasswordResetToken(token);
 
     if (!tokenEntity) {
       const err = new BadRequestException('Invalid or expired reset token');
       return [err, null];
     }
-
 
     if (tokenEntity.used_at) {
       const err = new BadRequestException(

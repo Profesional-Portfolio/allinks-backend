@@ -1,11 +1,16 @@
 import { z, ZodObject } from 'zod';
+import { $ZodType, $ZodTypeInternals } from 'zod/v4/core';
+
 import { BadRequestException } from '@/domain/exceptions';
 import { formatValidationError } from '@/infraestructure/utils';
-import { Response } from 'express';
 
-export const validate = <T extends ZodObject<any>>(
+export const validate = <
+  T extends ZodObject<
+    Record<string, $ZodType<unknown, unknown, $ZodTypeInternals>>
+  >,
+>(
   schema: T,
-  data: Record<string, any>
+  data: Record<string, unknown>
 ): z.infer<T> => {
   const result = schema.safeParse(data);
 

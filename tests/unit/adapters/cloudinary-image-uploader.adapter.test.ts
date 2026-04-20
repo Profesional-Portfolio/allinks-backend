@@ -1,5 +1,6 @@
-import { CloudinaryImageUploaderAdapter } from '../../../src/infraestructure/adapters/cloudinary-image-uploader.adapter';
 import { v2 as cloudinary } from 'cloudinary';
+
+import { CloudinaryImageUploaderAdapter } from '../../../src/infraestructure/adapters/cloudinary-image-uploader.adapter';
 
 jest.mock('cloudinary');
 
@@ -36,8 +37,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should upload image successfully when filePath is a Buffer', async () => {
       const mockBuffer = Buffer.from('test image data');
       const mockResult = {
-        secure_url: 'https://cloudinary.com/test-image.jpg',
         public_id: 'test-public-id-123',
+        secure_url: 'https://cloudinary.com/test-image.jpg',
       };
 
       const uploadPromise = adapter.uploadImage(mockBuffer);
@@ -52,8 +53,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
       );
       expect(mockUploadStream.end).toHaveBeenCalledWith(mockBuffer);
       expect(result).toEqual({
-        url: mockResult.secure_url,
         publicId: mockResult.public_id,
+        url: mockResult.secure_url,
       });
     });
 
@@ -83,8 +84,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should handle large Buffer uploads', async () => {
       const largeBuffer = Buffer.alloc(5 * 1024 * 1024); // 5MB buffer
       const mockResult = {
-        secure_url: 'https://cloudinary.com/large-image.jpg',
         public_id: 'large-public-id',
+        secure_url: 'https://cloudinary.com/large-image.jpg',
       };
 
       const uploadPromise = adapter.uploadImage(largeBuffer);
@@ -94,16 +95,16 @@ describe('CloudinaryImageUploaderAdapter', () => {
 
       expect(mockUploadStream.end).toHaveBeenCalledWith(largeBuffer);
       expect(result).toEqual({
-        url: mockResult.secure_url,
         publicId: mockResult.public_id,
+        url: mockResult.secure_url,
       });
     });
 
     it('should handle empty Buffer', async () => {
       const emptyBuffer = Buffer.from('');
       const mockResult = {
-        secure_url: 'https://cloudinary.com/empty.jpg',
         public_id: 'empty-id',
+        secure_url: 'https://cloudinary.com/empty.jpg',
       };
 
       const uploadPromise = adapter.uploadImage(emptyBuffer);
@@ -113,8 +114,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
 
       expect(mockUploadStream.end).toHaveBeenCalledWith(emptyBuffer);
       expect(result).toEqual({
-        url: mockResult.secure_url,
         publicId: mockResult.public_id,
+        url: mockResult.secure_url,
       });
     });
   });
@@ -123,8 +124,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should upload image successfully when filePath is a string', async () => {
       const mockFilePath = '/path/to/image.jpg';
       const mockResult = {
-        secure_url: 'https://cloudinary.com/uploaded-image.jpg',
         public_id: 'uploaded-public-id-456',
+        secure_url: 'https://cloudinary.com/uploaded-image.jpg',
       };
 
       mockUpload.mockImplementation((path, callback) => {
@@ -142,8 +143,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
         expect.any(Function)
       );
       expect(result).toEqual({
-        url: mockResult.secure_url,
         publicId: mockResult.public_id,
+        url: mockResult.secure_url,
       });
     });
 
@@ -181,8 +182,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should handle relative file paths', async () => {
       const mockFilePath = './images/test.png';
       const mockResult = {
-        secure_url: 'https://cloudinary.com/test.png',
         public_id: 'test-png-id',
+        secure_url: 'https://cloudinary.com/test.png',
       };
 
       mockUpload.mockImplementation((path, callback) => {
@@ -196,16 +197,16 @@ describe('CloudinaryImageUploaderAdapter', () => {
         expect.any(Function)
       );
       expect(result).toEqual({
-        url: mockResult.secure_url,
         publicId: mockResult.public_id,
+        url: mockResult.secure_url,
       });
     });
 
     it('should handle absolute file paths', async () => {
       const mockFilePath = '/home/user/images/photo.jpg';
       const mockResult = {
-        secure_url: 'https://cloudinary.com/photo.jpg',
         public_id: 'photo-jpg-id',
+        secure_url: 'https://cloudinary.com/photo.jpg',
       };
 
       mockUpload.mockImplementation((path, callback) => {
@@ -219,16 +220,16 @@ describe('CloudinaryImageUploaderAdapter', () => {
         expect.any(Function)
       );
       expect(result).toEqual({
-        url: mockResult.secure_url,
         publicId: mockResult.public_id,
+        url: mockResult.secure_url,
       });
     });
 
     it('should handle file paths with special characters', async () => {
       const mockFilePath = '/path/to/image with spaces & special-chars.jpg';
       const mockResult = {
-        secure_url: 'https://cloudinary.com/special-image.jpg',
         public_id: 'special-id',
+        secure_url: 'https://cloudinary.com/special-image.jpg',
       };
 
       mockUpload.mockImplementation((path, callback) => {
@@ -242,8 +243,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
         expect.any(Function)
       );
       expect(result).toEqual({
-        url: mockResult.secure_url,
         publicId: mockResult.public_id,
+        url: mockResult.secure_url,
       });
     });
   });
@@ -313,9 +314,9 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should return correct structure with url and publicId', async () => {
       const mockBuffer = Buffer.from('test');
       const mockResult = {
+        public_id: 'folder/sample',
         secure_url:
           'https://res.cloudinary.com/demo/image/upload/v1234/sample.jpg',
-        public_id: 'folder/sample',
       };
 
       const uploadPromise = adapter.uploadImage(mockBuffer);
@@ -332,8 +333,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should handle public_id with nested folders', async () => {
       const mockFilePath = '/path/to/image.jpg';
       const mockResult = {
-        secure_url: 'https://cloudinary.com/image.jpg',
         public_id: 'folder1/folder2/folder3/image',
+        secure_url: 'https://cloudinary.com/image.jpg',
       };
 
       mockUpload.mockImplementation((path, callback) => {
@@ -348,8 +349,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should handle URLs with query parameters', async () => {
       const mockBuffer = Buffer.from('test');
       const mockResult = {
-        secure_url: 'https://cloudinary.com/image.jpg?version=123&format=auto',
         public_id: 'test-id',
+        secure_url: 'https://cloudinary.com/image.jpg?version=123&format=auto',
       };
 
       const uploadPromise = adapter.uploadImage(mockBuffer);
@@ -367,8 +368,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should always use resource_type auto for Buffer uploads', async () => {
       const mockBuffer = Buffer.from('test');
       const mockResult = {
-        secure_url: 'https://cloudinary.com/test.jpg',
         public_id: 'test-id',
+        secure_url: 'https://cloudinary.com/test.jpg',
       };
 
       const uploadPromise = adapter.uploadImage(mockBuffer);
@@ -385,8 +386,8 @@ describe('CloudinaryImageUploaderAdapter', () => {
     it('should create upload_stream before processing string paths', async () => {
       const mockFilePath = '/path/to/image.jpg';
       const mockResult = {
-        secure_url: 'https://cloudinary.com/image.jpg',
         public_id: 'image-id',
+        secure_url: 'https://cloudinary.com/image.jpg',
       };
 
       mockUpload.mockImplementation((path, callback) => {

@@ -1,3 +1,5 @@
+import { Router } from 'express';
+
 import {
   DeleteUserAvatarUseCase,
   GetProfileUseCase,
@@ -5,20 +7,20 @@ import {
   UpdateUserAvatarUseCase,
   UploadImageUseCase,
 } from '@/domain/index';
+import {
+  CacheRedisAdapter,
+  JwtTokenProviderAdapter,
+} from '@/infraestructure/adapters';
 import { CloudinaryImageUploaderAdapter } from '@/infraestructure/adapters/cloudinary-image-uploader.adapter';
 import { UsersDatasourceImpl } from '@/infraestructure/datasources/users.datasource.impl';
 import { UsersRepositoryImpl } from '@/infraestructure/repositories';
-import { Router } from 'express';
-import { ProfileController } from './profile.controller';
-import { AuthMiddleware, upload } from '../middlewares';
-import {
-  JwtTokenProviderAdapter,
-  CacheRedisAdapter,
-} from '@/infraestructure/adapters';
 import { CacheService } from '@/infraestructure/services';
 
-export class ProfileRoutes {
-  static get routes(): Router {
+import { AuthMiddleware, upload } from '../middlewares';
+import { ProfileController } from './profile.controller';
+
+export const ProfileRoutes = {
+  get routes(): Router {
     const router = Router();
     const tokenProvider = new JwtTokenProviderAdapter();
     const uploadFileService = new CloudinaryImageUploaderAdapter();
@@ -244,5 +246,5 @@ export class ProfileRoutes {
     );
 
     return router;
-  }
-}
+  },
+};

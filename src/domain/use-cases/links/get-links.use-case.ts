@@ -19,17 +19,19 @@ export class GetLinksUseCase implements IGetLinksUseCase {
   ): Promise<[Exception | undefined, LinkEntity[]]> {
     // 1. Try to get from cache
     const cachedLinks = await this.cacheService.getUserLinks(userIdDto.user_id);
-    if (cachedLinks) {
+
+    console.log({ cachedLinks });
+
+    if (cachedLinks?.length) {
       return [undefined, cachedLinks];
     }
 
     // 2. If not in cache, get from repository
+    console.log('Queying database for links');
     const [error, links] = await this.linkRepository.getLinks(userIdDto);
 
     // 3. Save to cache if successful
-    if (!error && links) {
-      await this.cacheService.setUserLinks(userIdDto.user_id, links);
-    }
+    await this.cacheService.setUserLinks(userIdDto.user_id, links);
 
     return [error, links];
   }

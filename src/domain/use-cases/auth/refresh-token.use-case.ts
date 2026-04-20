@@ -1,6 +1,7 @@
 import { Exception } from '@/domain/exceptions';
-import { TokenProvider, TokenPair } from '../../interfaces';
 import { CacheService } from '@/infraestructure/services/cache.service';
+
+import { TokenPair, TokenProvider } from '../../interfaces';
 
 export class RefreshTokenUseCase {
   constructor(
@@ -30,8 +31,8 @@ export class RefreshTokenUseCase {
     }
 
     const [error, tokens] = await this.tokenProvider.generateTokenPair({
-      id: payload.id,
       email: payload.email,
+      id: payload.id,
     });
 
     if (error) {

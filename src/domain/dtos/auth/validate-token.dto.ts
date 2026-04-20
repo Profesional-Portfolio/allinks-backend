@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { tokenDto } from '../shared';
 
 export const validateTokenDto = z.object({

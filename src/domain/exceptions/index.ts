@@ -14,20 +14,14 @@ export class BadRequestException extends Exception {
   }
 }
 
-export class UnauthorizedException extends Exception {
-  constructor(message = 'Unauthorized', statusCode = StatusCode.UNAUTHORIZED) {
+export class ConflictException extends Exception {
+  constructor(message = 'Conflict', statusCode = StatusCode.CONFLICT) {
     super(message, statusCode);
   }
 }
 
 export class ForbiddenException extends Exception {
   constructor(message = 'Forbidden', statusCode = StatusCode.FORBIDDEN) {
-    super(message, statusCode);
-  }
-}
-
-export class ConflictException extends Exception {
-  constructor(message = 'Conflict', statusCode = StatusCode.CONFLICT) {
     super(message, statusCode);
   }
 }
@@ -43,6 +37,12 @@ export class InternalServerErrorException extends Exception {
 
 export class NotFoundException extends Exception {
   constructor(message = 'Not found', statusCode = StatusCode.NOT_FOUND) {
+    super(message, statusCode);
+  }
+}
+
+export class UnauthorizedException extends Exception {
+  constructor(message = 'Unauthorized', statusCode = StatusCode.UNAUTHORIZED) {
     super(message, statusCode);
   }
 }

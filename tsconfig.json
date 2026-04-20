@@ -1,13 +1,14 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
+    "allowImportingTsExtensions": true,
     "rootDirs": ["./src", "./generated"],
     "lib": ["esnext"],
     "target": "ESNext",
     "moduleResolution": "bundler",
     "module": "esnext",
     // "strict": true,
-    // "strictNullChecks": true,
+    "strictNullChecks": true,
     "sourceMap": true,
     "esModuleInterop": true,
     "declaration": true,
@@ -33,7 +34,7 @@
     "./src/**/*.ts",
     "./generated/**/*",
     "./tests/**/*",
-    "./tsup.config.ts"
+    "*.config.ts"
   ],
-  "exclude": ["dist", "node_modules", "./tests/**/*"]
+  "exclude": ["dist", "node_modules"]
 }
