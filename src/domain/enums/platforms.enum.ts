@@ -12,6 +12,6 @@ export enum Platforms {
   TIKTOK = 'tiktok',
   TWITCH = 'twitch',
   WEBSITE = 'website',
-  X = 'X',
+  X = 'x',
   YOUTUBE = 'youtube',
 }

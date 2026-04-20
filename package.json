@@ -18,7 +18,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:deploy": "pnpm dlx prisma migrate deploy && pnpm dlx prisma generate",
-    "db:seed": "tsx -r tsconfig-paths/register src/config/seed.ts",
+    "db:seed": "cross-env NODE_ENV=development tsx -r tsconfig-paths/register src/config/seed.ts",
     "db:reset": "tsx -r tsconfig-paths/register src/config/reset-db.ts",
     "dev:docker": "sh ./scripts/dev.sh"
   },
