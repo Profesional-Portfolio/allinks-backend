@@ -1,13 +1,13 @@
-import { UpdateLinkDto } from '@/domain/dtos';
+import { IdDto, UserIdDto } from '@/domain/dtos';
 import { Exception } from '@/domain/exceptions';
 import { LinksRepository, UsersRepository } from '@/domain/repositories';
 import { CacheService } from '@/infraestructure/services';
 
-interface IDeleteLinkUseCase {
-  execute(payload: UpdateLinkDto): Promise<[Exception | undefined, string]>;
+export interface IChangeVisibilityUseCase {
+  execute(payload: IdDto & UserIdDto): Promise<[Exception | undefined, string]>;
 }
 
-export class DeleteLinkUseCase implements IDeleteLinkUseCase {
+export class ChangeVisibilityUseCase implements IChangeVisibilityUseCase {
   constructor(
     private readonly linkRepository: LinksRepository,
     private readonly usersRepository: UsersRepository,
@@ -15,11 +15,12 @@ export class DeleteLinkUseCase implements IDeleteLinkUseCase {
   ) {}
 
   async execute(
-    payload: UpdateLinkDto
+    payload: IdDto & UserIdDto
   ): Promise<[Exception | undefined, string]> {
-    const [error, link] = await this.linkRepository.deleteLink(payload);
+    const [error, result] = await this.linkRepository.changeVisibility(payload);
 
-    if (!error && link) {
+    if (!error) {
+      // Fetch user to get username for cache invalidation
       const [userError, user] = await this.usersRepository.findUserById(
         payload.user_id
       );
@@ -28,6 +29,6 @@ export class DeleteLinkUseCase implements IDeleteLinkUseCase {
       }
     }
 
-    return [error, link];
+    return [error, result];
   }
 }

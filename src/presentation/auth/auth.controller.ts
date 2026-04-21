@@ -123,8 +123,6 @@ export class AuthController {
         );
       }
 
-      console.log({ result });
-
       // Establecer cookies con los tokens
       res.cookie(
         COOKIE_NAMES.ACCESS_TOKEN,

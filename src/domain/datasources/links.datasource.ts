@@ -15,17 +15,20 @@ export interface LinksDataSource {
   createLink(
     payload: CreateLinkDto
   ): Promise<[Exception | undefined, LinkEntity | null]>;
+  deleteLink(
+    payload: IdDto & UserIdDto
+  ): Promise<[Exception | undefined, string]>;
+
   getLinkById(
     payload: IdDto & UserIdDto
   ): Promise<[Exception | undefined, LinkEntity | null]>;
-
   getLinks(
     userIdDto: UserIdDto
   ): Promise<[Exception | undefined, LinkEntity[]]>;
+
   getLinksByIds(
     payload: UserIdDto & { ids: string[] }
   ): Promise<[Exception | undefined, LinkEntity[]]>;
-
   reorderLinks(
     payload: ReorderLinksDto
   ): Promise<[Exception | undefined, string]>;
