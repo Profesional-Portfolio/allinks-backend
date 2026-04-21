@@ -1,4 +1,4 @@
-import { ChangeVisibilityUseCase } from '@/domain/use-cases/links/delete-link.use-case';
+import { ChangeVisibilityUseCase } from '@/domain/use-cases/links/change-link-visibility.use-case';
 
 import {
   mockCacheService,
@@ -49,7 +49,7 @@ describe('ChangeVisibilityUseCase', () => {
       '',
     ]);
 
-    const [error, result] = await changeVisibilityUseCase.execute(payload);
+    const [error] = await changeVisibilityUseCase.execute(payload);
 
     expect(error).toEqual(mockError);
     expect(mockCacheService.invalidateLinks).not.toHaveBeenCalled();

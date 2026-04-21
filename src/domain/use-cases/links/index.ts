@@ -1,3 +1,4 @@
+export * from './change-link-visibility.use-case';
 export * from './create-link.use-case';
 export * from './delete-link.use-case';
 export * from './get-links.use-case';

@@ -25,6 +25,12 @@ export class LinksRepositoryImpl implements LinksRepository {
     return await this.linkDataSource.createLink(payload);
   }
 
+  async deleteLink(
+    payload: IdDto & UserIdDto
+  ): Promise<[Exception | undefined, string]> {
+    return await this.linkDataSource.deleteLink(payload);
+  }
+
   async getLinkById(
     payload: IdDto & UserIdDto
   ): Promise<[Exception | undefined, LinkEntity | null]> {

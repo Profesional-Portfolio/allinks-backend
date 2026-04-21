@@ -15,6 +15,11 @@ export interface LinksRepository {
   createLink(
     payload: CreateLinkDto
   ): Promise<[Exception | undefined, LinkEntity | null]>;
+
+  deleteLink(
+    payload: IdDto & UserIdDto
+  ): Promise<[Exception | undefined, string]>;
+
   getLinkById(
     payload: IdDto
   ): Promise<[Exception | undefined, LinkEntity | null]>;

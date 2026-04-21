@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
   ChangeVisibilityUseCase,
   CreateLinkUseCase,
+  DeleteLinkUseCase,
   GetLinksUseCase,
   ReorderLinksUseCase,
   UpdateLinkUseCase,
@@ -55,6 +56,13 @@ export const LinksRoutes = {
       usersRepository,
       cacheService
     );
+
+    const deleteLinkUseCase = new DeleteLinkUseCase(
+      linksRepository,
+      usersRepository,
+      cacheService
+    );
+
     const updateLinkUseCase = new UpdateLinkUseCase(
       linksRepository,
       usersRepository,
@@ -70,6 +78,7 @@ export const LinksRoutes = {
       getLinksUseCase,
       changeVisibilityUseCase,
       createLinkUseCase,
+      deleteLinkUseCase,
       updateLinkUseCase,
       reorderLinksUseCase
     );
@@ -458,6 +467,63 @@ export const LinksRoutes = {
       '/:id',
       [authMiddleware.authenticate, authorizeLinkOwnerResource.authorize],
       controller.updateLink
+    );
+
+    /**
+     * @swagger
+     * /api/links/:id:
+     *   delete:
+     *     tags:
+     *       - Links
+     *     summary: Delete link
+     *     headers:
+     *       Set-Cookie:
+     *         description: >
+     *           Sets the access and refresh tokens.
+     *           Note: Multiple Set-Cookie headers are sent.
+     *         schema:
+     *           type: string
+     *           example: "accessToken=...; Path=/; HttpOnly; Secure; SameSite=Lax, refreshToken=...; Path=/; HttpOnly; Secure; SameSite=Lax"
+     *     parameters:
+     *       - name: id
+     *         in: path
+     *         required: true
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Link deleted successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/DeletedLinkResponse'
+     *
+     *       401:
+     *         description: Unauthorized
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/UnauthorizedResponse'
+     *
+     *       403:
+     *         description: Forbidden
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/ForbiddenResponse'
+     *
+     *       500:
+     *         description: Internal Server Error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/InternalServerErrorResponse'
+     */
+
+    router.delete(
+      '/:id',
+      [authMiddleware.authenticate, authorizeLinkOwnerResource.authorize],
+      controller.deleteLink
     );
 
     return router;
