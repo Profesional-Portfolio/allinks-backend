@@ -1,4 +1,3 @@
-version: '3'
 services:
   # Database with postgresql
   postgres_db:
@@ -15,7 +14,7 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d postgres']
+      test: [ 'CMD-SHELL', 'pg_isready -U postgres -d postgres' ]
       interval: 5s
       timeout: 2s
       retries: 20
@@ -54,7 +53,7 @@ services:
     volumes:
       - ./redis_data:/data
     healthcheck:
-      test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
+      test: [ 'CMD-SHELL', 'redis-cli ping | grep PONG' ]
       interval: 1s
       timeout: 3s
       retries: 5
