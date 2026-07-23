@@ -3,22 +3,28 @@ FROM node:22-alpine
 ENV PNPM_HOME="/pnpm"
 
 ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
-RUN corepack enable
-
-RUN addgroup app && adduser -S -G app app
-
-USER app
+RUN mkdir -p "$PNPM_HOME" \
+	&& corepack install --global pnpm@11.16.0 \
+	&& corepack enable pnpm \
+	&& addgroup -S app \
+	&& adduser -S -G app app \
+	&& chown -R app:app /pnpm
 
 WORKDIR /usr/src/app
 
-COPY package.json *.yaml ./
+RUN chown app:app /usr/src/app
 
-USER root
+USER app
 
-RUN pnpm install
+COPY --chown=app:app package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-COPY . .
+RUN pnpm install --frozen-lockfile
+
+COPY --chown=app:app . .
+
+USER app
 
 EXPOSE 3000
 

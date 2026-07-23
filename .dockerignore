@@ -1,4 +1,14 @@
 node_modules
+dist
+coverage
+.git
+.gitignore
+.env*
+!.env.example
+Dockerfile*
+dockerfile*
+docker-compose*.yml
+*.log
 npm-debug.log*
 generated/
 .npm
@@ -17,3 +27,12 @@ docker-compose*
 *.swp
 *.swo
 *~
+
+*.log
+.DS_Store
+.turbo
+tests/
+*.md
+
+postgres_data/
+redis_data/

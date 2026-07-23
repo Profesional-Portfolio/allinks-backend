@@ -3,22 +3,27 @@ FROM node:22-alpine AS builder
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
-RUN corepack enable
+RUN mkdir -p "$PNPM_HOME" \
+	&& corepack install --global pnpm@11.16.0 \
+	&& corepack enable pnpm
 
 WORKDIR /usr/src/app
 
 # Instalar deps (layer cache — solo se re-ejecuta si cambia package.json/lockfile)
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Copiar SOLO el schema primero para cachear prisma generate
 COPY prisma ./prisma
-RUN pnpm dlx prisma generate
+RUN pnpm exec prisma generate
 
 # Ahora copiar el resto del source y compilar
 COPY . .
 RUN pnpm build
+
+RUN pnpm prune --prod
 
 # ─── Stage 2: Production ─────────────────────────────────────────────────────
 FROM node:22-alpine AS production
@@ -26,26 +31,20 @@ FROM node:22-alpine AS production
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV NODE_ENV=production
-ENV DATABASE_URL="postgresql://postgres:prisma@localhost:5432/postgres"
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
-RUN corepack enable
+RUN mkdir -p "$PNPM_HOME" \
+	&& corepack install --global pnpm@11.16.0 \
+	&& corepack enable pnpm
 
 RUN addgroup -S app && adduser -S app -G app
 
 WORKDIR /usr/src/app
 
-COPY package.json pnpm-lock.yaml ./
-
-# prisma debe estar en "dependencies" (no devDependencies) para esto
-RUN pnpm install --frozen-lockfile --prod
-
-# Generar cliente con el binario correcto de ESTE contenedor (linux/amd64)
 COPY --from=builder /usr/src/app/prisma ./prisma
 COPY --from=builder /usr/src/app/prisma.config.ts ./prisma.config.ts
-
-RUN pnpm dlx prisma generate
-
-# Compilado del builder
+COPY --from=builder /usr/src/app/package.json ./package.json
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/dist ./dist
 
 RUN chown -R app:app /usr/src/app
@@ -56,4 +55,4 @@ EXPOSE 3000
 
 # Migraciones + arranque
 
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/app.js"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node dist/app.js"]

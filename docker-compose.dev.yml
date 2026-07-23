@@ -12,7 +12,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=prisma
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: [ 'CMD-SHELL', 'pg_isready -U postgres -d postgres' ]
       interval: 5s
@@ -51,7 +51,7 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - ./redis_data:/data
+      - redis_data:/data
     healthcheck:
       test: [ 'CMD-SHELL', 'redis-cli ping | grep PONG' ]
       interval: 1s
@@ -67,6 +67,7 @@ services:
       context: .
       dockerfile: dockerfile.dev
     container_name: allinks-server
+    user: "${UID:-1000}:${GID:-1000}"
     ports:
       - '3000:3000'
     volumes:
@@ -86,3 +87,8 @@ services:
 networks:
   app-network:
     name: app-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
