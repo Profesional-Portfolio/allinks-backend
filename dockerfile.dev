@@ -7,24 +7,26 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
 RUN mkdir -p "$PNPM_HOME" \
 	&& corepack install --global pnpm@11.16.0 \
-	&& corepack enable pnpm \
-	&& addgroup -S app \
-	&& adduser -S -G app app \
-	&& chown -R app:app /pnpm
+	&& corepack enable pnpm
+	# && addgroup -S app \
+	# && adduser -S -G app app \
+	# && chown -R app:app /pnpm
 
 WORKDIR /usr/src/app
 
-RUN chown app:app /usr/src/app
+# RUN chown app:app /usr/src/app
 
-USER app
+# USER app
 
-COPY --chown=app:app package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# COPY --chown=app:app package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 RUN pnpm install --frozen-lockfile
 
-COPY --chown=app:app . .
+# COPY --chown=app:app . .
+COPY . .
 
-USER app
+# USER app
 
 EXPOSE 3000
 
